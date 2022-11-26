@@ -86,10 +86,11 @@ void count_residues_equals_0(MpzResidues *mpzResidues, int size) {
 }
 
 void
-writefiles(MpzResidues *mpzResidues, FILE *fptrValue, FILE *fptrHam, FILE *fptrHam2, FILE *fptrHamAndNoise, int size) {
+writefiles(MpzResidues *mpzResidues, FILE *fptrValue, FILE *fptrHam, FILE *fptrHam2, FILE *fptrHamAndNoise, int size, int a, int b) {
     for (int i = 0; i < size; i++) {
         gmp_fprintf(fptrValue, "%Zu\n", mpzResidues->array[i]);
         gmp_fprintf(fptrHam, "%u\n", mpz_popcount(mpzResidues->array[i]));
+        gmp_fprintf(fptrHam2, "%u\n, a * mpz_popcount(mpzResidues->array[i]) + b);
     }
 }
 
@@ -100,6 +101,8 @@ int main(int argc, char const *argv[]) {
     }
 
     int size = 0, nbSievePrimes = 0;
+    int a = 2;
+    int b = 3;
     mpz_t tmpRand;
     mpz_t *sievePrimeList;
     MpzResidues *mpzResidues = malloc(sizeof(MpzResidues));
