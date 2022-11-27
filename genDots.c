@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <math.h>
+#include "gauss.c"
 
 #define A 2
 #define B 3
@@ -16,30 +16,6 @@ typedef struct {
     int has_a_0;
     mpz_t *array;
 } MpzResidues;
-
-
-double gauss(void) {
-    static double x0, x1;
-    static unsigned int nb_ready;
-
-    double u, v, w, z;
-
-    if (nb_ready == 0) {
-        u = ((double) rand()) / RAND_MAX;
-        v = ((double) rand()) / RAND_MAX;
-        w = sqrt(-2.0 * log(u));
-        z = 2 * M_PI * v;
-        x0 = w * cos(z);
-        x1 = w * sin(z);
-
-        nb_ready = 1;
-        return x0;
-    } else {
-        nb_ready = 0;
-        return x1;
-    }
-}
-
 
 /*
   Calcul les k premiers et les stocke dans sievePrimeList.
