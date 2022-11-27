@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
+#define A 2
+#define B 3
 #define PRIME 1
 #define COMPOSITE 0
 
@@ -13,6 +16,30 @@ typedef struct {
     int has_a_0;
     mpz_t *array;
 } MpzResidues;
+
+
+double gauss(void) {
+    static double x0, x1;
+    static unsigned int nb_ready;
+
+    double u, v, w, z;
+
+    if (nb_ready == 0) {
+        u = ((double) rand()) / RAND_MAX;
+        v = ((double) rand()) / RAND_MAX;
+        w = sqrt(-2.0 * log(u));
+        z = 2 * M_PI * v;
+        x0 = w * cos(z);
+        x1 = w * sin(z);
+
+        nb_ready = 1;
+        return x0;
+    } else {
+        nb_ready = 0;
+        return x1;
+    }
+}
+
 
 /*
   Calcul les k premiers et les stocke dans sievePrimeList.
@@ -85,12 +112,13 @@ void count_residues_equals_0(MpzResidues *mpzResidues, int size) {
     mpzResidues->has_a_0 = tmp;
 }
 
-void
-writefiles(MpzResidues *mpzResidues, FILE *fptrValue, FILE *fptrHam, FILE *fptrHam2, FILE *fptrHamAndNoise, int size, int a, int b) {
+void writefiles(MpzResidues *mpzResidues, FILE *fptrValue, FILE *fptrHam, FILE *fptrHam2,
+                FILE *fptrHamAndNoise, int size) {
     for (int i = 0; i < size; i++) {
         gmp_fprintf(fptrValue, "%Zu\n", mpzResidues->array[i]);
         gmp_fprintf(fptrHam, "%u\n", mpz_popcount(mpzResidues->array[i]));
-        gmp_fprintf(fptrHam2, "%u\n, a * mpz_popcount(mpzResidues->array[i]) + b);
+        gmp_fprintf(fptrHam2, "%u\n", A * mpz_popcount(mpzResidues->array[i]) + B);
+        gmp_fprintf(fptrHamAndNoise, "%u\n", A * mpz_popcount(mpzResidues->array[i]) + B + gauss());
     }
 }
 
@@ -101,8 +129,6 @@ int main(int argc, char const *argv[]) {
     }
 
     int size = 0, nbSievePrimes = 0;
-    int a = 2;
-    int b = 3;
     mpz_t tmpRand;
     mpz_t *sievePrimeList;
     MpzResidues *mpzResidues = malloc(sizeof(MpzResidues));
