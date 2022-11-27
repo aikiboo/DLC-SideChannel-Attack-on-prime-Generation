@@ -94,7 +94,7 @@ void writefiles(MpzResidues *mpzResidues, FILE *fptrValue, FILE *fptrHam, FILE *
         gmp_fprintf(fptrValue, "%Zu\n", mpzResidues->array[i]);
         gmp_fprintf(fptrHam, "%u\n", mpz_popcount(mpzResidues->array[i]));
         gmp_fprintf(fptrHam2, "%u\n", A * mpz_popcount(mpzResidues->array[i]) + B);
-        gmp_fprintf(fptrHamAndNoise, "%u\n", A * mpz_popcount(mpzResidues->array[i]) + B + gauss());
+        gmp_fprintf(fptrHamAndNoise, "%lf\n", A * mpz_popcount(mpzResidues->array[i]) + B + gauss());
     }
 }
 
