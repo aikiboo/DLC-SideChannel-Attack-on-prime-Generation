@@ -102,24 +102,25 @@ double correlation_coeff(double *X, double *Y, int size) {
     double mean_X = 0;
     double mean_Y = 0;
 
-    for (int i = 0; i<size; i++) {
+    for (int i = 0; i < size; i++) {
         mean_X = mean_X + X[i];
         mean_Y = mean_Y + Y[i];
     }
-    mean_X = mean_X/size;
-    mean_Y = mean_Y/size;
+    mean_X = mean_X / size;
+    mean_Y = mean_Y / size;
 
     double num = 0;
-    double denum = 0;
+    double denum;
     double sx = 0;
     double sy = 0;
-    for (int i = 0; i<size; i++) {
-        num = num + (X[i]-mean_X)*(Y[i]-mean_Y);
-        sx = sx + pow(X[i]-mean_X,2);
-        sy = sy + pow(Y[i]-mean_Y,2);
+    for (int i = 0; i < size; i++) {
+        num = num + (X[i] - mean_X) * (Y[i] - mean_Y);
+        sx = sx + pow(X[i] - mean_X, 2);
+        sy = sy + pow(Y[i] - mean_Y, 2);
     }
-    denum = sqrt(sx*sy);
-    return num/denum;
+    denum = sqrt(sx * sy);
+    if (denum == 0)return 0;
+    return num / denum;
 }
 
 /*
@@ -128,7 +129,7 @@ Renvoie l'indice de la valeur absolue maximale de la liste
 unsigned long int argmax(double *L, int size) {
     double max = L[1];
     int imax = 1;
-    for (int i = 2; i<size; i++) {
+    for (int i = 2; i < size; i++) {
         if (fabs(L[i]) > max) {
             max = fabs(L[i]);
             imax = i;
@@ -142,25 +143,29 @@ void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned long int
     mpz_t current;
     mpz_t Ni;
     mpz_t inv_Ni;
-   
-    mpz_inits(N, current, Ni, inv_Ni, NULL);
-    mpz_set_ui(N,1);
 
-    for (int i = 0; i < nbSievePrimes; i++) {
-        if (candidats[i] != 0){
-            mpz_mul(N,N,sievePrimeList[i]);
-        }
+    mpz_inits(N, current, Ni, inv_Ni, NULL);
+    mpz_set_ui(N, 1);
+
+    mpz_t MAX;
+    mpz_init(MAX);
+    mpz_ui_pow_ui(MAX, 2, 33);
+
+
+    for (int i = 0; i < nbSievePrimes - 1; i++) {
+        mpz_mul(N, N, sievePrimeList[i]);
     }
-    for (int i = 0; i < nbSievePrimes; i++) {
-        if (candidats[i] != 0){
-            mpz_divexact(Ni, N, sievePrimeList[i]);
-            mpz_invert(inv_Ni, Ni, sievePrimeList[i]);
-            mpz_mul_ui(current, Ni, candidats[i]);
-            mpz_mul(current,current,inv_Ni);
-            mpz_add(p,p,current);
-        }
-        mpz_mod(p,p,N);
+    gmp_printf("Debug : N = %Zu\n", N);
+    gmp_printf("Debug : MAX = %Zu\n", MAX);
+    for (int i = 0; i < nbSievePrimes - 1; i++) {
+        mpz_divexact(Ni, N, sievePrimeList[i]);
+        mpz_invert(inv_Ni, Ni, sievePrimeList[i]);
+        mpz_mul_ui(current, Ni, candidats[i]);
+        mpz_mul(current, current, inv_Ni);
+        mpz_add(p, p, current);
+        mpz_mod(p, p, MAX);
     }
+    mpz_mod(p, p, MAX);
 
 
 }
@@ -199,7 +204,7 @@ int main(int argc, char const *argv[]) {
     size = atoi(argv[2]);
 
 //setup du sieve
-    sievePrimeList = malloc(sizeof(mpz_t) * size);
+    sievePrimeList = malloc(sizeof(mpz_t) * nbSievePrimes);
     find_k_first_primes(nbSievePrimes, sievePrimeList);
 
 //on gen un random impair
@@ -222,6 +227,7 @@ int main(int argc, char const *argv[]) {
                 mpz_mod(mpzResidues->array[i], mpzResidues->array[i], sievePrimeList[i]);
             }
             nb_candidats++;
+            gmp_printf("%Zu\n", tmpRand);
             mpz_add_ui(tmpRand, tmpRand, 2);
             writefiles(mpzResidues, fptrValue, fptrHam, fptrHam2, fptrHamAndNoise, nbSievePrimes);
             count_residues_equals_0(mpzResidues, nbSievePrimes);
@@ -231,9 +237,9 @@ int main(int argc, char const *argv[]) {
     }
 
     printf("Is prime (1=prob,2=100\%) : %d\n", mpz_probab_prime_p(tmpRand, 10));
-    
+
     fclose(fptrHamAndNoise);
-    fptrHamAndNoise = fopen("output_hamming_with_func_and_noise.txt","r");
+    fptrHamAndNoise = fopen("output_hamming_with_func_and_noise.txt", "r");
     rewind(fptrHamAndNoise);
 
     double tmp;
@@ -241,10 +247,10 @@ int main(int argc, char const *argv[]) {
     mpz_t z_m;
     mpz_init(z_h);
     mpz_init(z_m);
-    unsigned long int candidats[nbSievePrimes-1];
+    unsigned long int candidats[nbSievePrimes - 1];
     mpz_t p;
     mpz_init(p);
-    
+
 
     double mesures[nb_candidats][nbSievePrimes];
 
@@ -252,45 +258,54 @@ int main(int argc, char const *argv[]) {
     Récupération des mesures
     */
 
-    for (int i = 0; i<nb_candidats; i++) {
-        for(int j = 0; j<nbSievePrimes; j++) {
-            fscanf(fptrHamAndNoise,"%lf",&tmp);
+    for (int i = 0; i < nb_candidats; i++) {
+        for (int j = 0; j < nbSievePrimes; j++) {
+            fscanf(fptrHamAndNoise, "%lf", &tmp);
             mesures[i][j] = tmp;
         }
     }
 
-
-   for (int j = 1; j<nbSievePrimes; j++) {
+    for (int j = 1; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
         double score[small_prime];
-        for(int h = 1; h<small_prime; h++) {
+        int debug = 0;
+        for (int h = 1; h < small_prime; h++) {
             //mpz_set_ui(z_h,h);
             double hypothesis[nb_candidats];
             double comparaisons[nb_candidats];
-            for(int i = 0; i<nb_candidats; i++) {
-                mpz_set_ui(z_h,h);
-                mpz_set_ui(z_m,nb_candidats);
-                mpz_sub_ui(z_m,z_m,i);
-                mpz_sub_ui(z_m,z_m,1);
-                mpz_mul_ui(z_m,z_m,2);
-                mpz_sub(z_h,z_h,z_m);
-                mpz_mod(z_h,z_h,sievePrimeList[j]);
+            for (int i = 0; i < nb_candidats; i++) {
+                mpz_set_ui(z_h, h);
+                mpz_set_ui(z_m, nb_candidats);
+                mpz_sub_ui(z_m, z_m, i);
+                mpz_sub_ui(z_m, z_m, 1);
+                mpz_mul_ui(z_m, z_m, 2);
+                mpz_sub(z_h, z_h, z_m);
+                mpz_mod(z_h, z_h, sievePrimeList[j]);
                 hypothesis[i] = A * mpz_popcount(z_h) + B; //w(h - (n - i - 1)*2 mod sj)
                 comparaisons[i] = mesures[i][j];
             }
 
             score[h] = correlation_coeff(hypothesis, comparaisons, nb_candidats);
-            if (j == 1) {
-                printf("score = %lf\n", score[h]);
+            if (score[h] != 0)debug++;
+            else {
+                for (int k = 0; k < nb_candidats; k++) {
+                    printf("Debug : %lf\n", hypothesis[k]);
+                    printf("Debug 2: %lf\n", comparaisons[k]);
+                }
             }
+            if (j == 1)printf("Score : %lf\n", score[h]);
         }
-        candidats[j] = argmax(score, small_prime);
-        gmp_printf("p congru à %lu  mod %Zd \n",candidats[j], sievePrimeList[j]); 
+        if (debug == 0) {
+            printf("Error score");
+            exit(4);
+        }
+        candidats[j - 1] = argmax(score, small_prime);
+        gmp_printf("p congru à %lu  mod %Zd \n", candidats[j - 1], sievePrimeList[j]);
 
     }
 
     chinese_remainder_theorem(p, sievePrimeList, candidats, nbSievePrimes);
-    gmp_printf("p = %Zd\n",p);
+    gmp_printf("p = %Zd\n", p);
 
     //gmp_printf("nb of 1 %u\n",mpz_popcount(tmpRand));
     gmp_printf("%Zu\n", tmpRand);
