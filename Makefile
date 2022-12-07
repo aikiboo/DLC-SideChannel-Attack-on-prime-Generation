@@ -1,22 +1,18 @@
 CC = gcc
 
-NAME = genDots
-
-SRCS = genDots.c
-
-OBJS = $(SRCS:.c=.o)
-
 CFLAGS = -Wall -Wextra
 
 CLIBS = -lgmp -lm
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CLIBS) -lm
+genDots: genDots.c
+	$(CC) $(CFLAGS) -o genDots genDots.c $(CLIBS)
 
-all: $(NAME)
+analyse: analyse.c
+	$(CC) $(CFLAGS) -o analyse analyse.c $(CLIBS)
 
-%.o: %.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+all: genDots analyse
+
+
 
 clean:
-	@rm -f $(OBJS)
+	@rm -f *.o
