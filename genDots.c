@@ -130,7 +130,7 @@ int main(int argc, char const *argv[]) {
     size = atoi(argv[2]);
 
 //setup du sieve
-    sievePrimeList = malloc(sizeof(mpz_t) * size);
+    sievePrimeList = malloc(sizeof(mpz_t) * nbSievePrimes);
     find_k_first_primes(nbSievePrimes, sievePrimeList);
 
 //on gen un random impair
