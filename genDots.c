@@ -104,7 +104,7 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
-    int size = 0, nbSievePrimes = 0;
+    int size = 0, nbSievePrimes = 0,nb_candidats=1;
     mpz_t tmpRand;
     mpz_t *sievePrimeList;
     MpzResidues *mpzResidues = malloc(sizeof(MpzResidues));
@@ -148,6 +148,7 @@ int main(int argc, char const *argv[]) {
 
     while (1) {
         while (mpzResidues->has_a_0) {
+            nb_candidats++;
             for (int i = 0; i < nbSievePrimes; i++) {
                 mpz_add_ui(mpzResidues->array[i], mpzResidues->array[i], 2);
                 mpz_mod(mpzResidues->array[i], mpzResidues->array[i], sievePrimeList[i]);
@@ -162,7 +163,8 @@ int main(int argc, char const *argv[]) {
     printf("Is prime (1=prob,2=100\%) : %d\n", mpz_probab_prime_p(tmpRand, 10));
 
     //gmp_printf("nb of 1 %u\n",mpz_popcount(tmpRand));
-    gmp_printf("%Zu\n", tmpRand);
+    printf("Nb de candidats : %d\n",nb_candidats);
+    gmp_printf("Premier: \t%Zu\n", tmpRand);
 
     fclose(fptrValue);
     fclose(fptrHam);
