@@ -8,7 +8,7 @@ genDots: genDots.c
 	$(CC) $(CFLAGS) -o genDots genDots.c $(CLIBS)
 
 analyse: analyse.c
-	$(CC) $(CFLAGS) -o analyse analyse.c $(CLIBS)
+	$(CC) $(CFLAGS) -o analyse function.c analyse.c  $(CLIBS)
 
 all: genDots analyse
 
