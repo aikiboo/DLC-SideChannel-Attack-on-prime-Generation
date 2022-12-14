@@ -83,25 +83,21 @@ void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned long int
     mpz_inits(N, current, Ni, inv_Ni, NULL);
     mpz_set_ui(N, 1);
 
-    mpz_t MAX;
-    mpz_init(MAX);
-    mpz_ui_pow_ui(MAX, 2, 33);
 
 
     for (int i = 0; i < nbSievePrimes - 1; i++) {
         mpz_mul(N, N, sievePrimeList[i]);
     }
     gmp_printf("Debug : N = %Zu\n", N);
-    gmp_printf("Debug : MAX = %Zu\n", MAX);
     for (int i = 0; i < nbSievePrimes - 1; i++) {
         mpz_divexact(Ni, N, sievePrimeList[i]);
         mpz_invert(inv_Ni, Ni, sievePrimeList[i]);
         mpz_mul_ui(current, Ni, candidats[i]);
         mpz_mul(current, current, inv_Ni);
         mpz_add(p, p, current);
-        mpz_mod(p, p, MAX);
+        mpz_mod(p, p, N);
     }
-    mpz_mod(p, p, MAX);
+    mpz_mod(p, p, N);
 
 
 }
@@ -113,7 +109,7 @@ int main(int argc, char const *argv[]) {
     }
 
     FILE *fptrHamAndNoise = fopen(argv[1], "r");
-    int nbSievePrimes = atoi(argv[3]);
+    int nbSievePrimes = atoi(argv[2]);
     int nb_candidats = atoi(argv[3]);
     double tmp;
     int small_prime;
