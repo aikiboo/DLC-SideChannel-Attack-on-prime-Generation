@@ -103,12 +103,13 @@ double correlation_coeff(double *X, double *Y, int size) {
     double mean_Y = 0;
 
     for (int i = 0; i < size; i++) {
+        printf("%lf\t %lf\n", X[i], Y[i]);
         mean_X = mean_X + X[i];
         mean_Y = mean_Y + Y[i];
     }
     mean_X = mean_X / size;
     mean_Y = mean_Y / size;
-
+    printf("Debug : %lf\t %lf\n", mean_X, mean_Y);
     double num = 0;
     double denum;
     double sx = 0;
@@ -163,9 +164,9 @@ void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned long int
         mpz_mul_ui(current, Ni, candidats[i]);
         mpz_mul(current, current, inv_Ni);
         mpz_add(p, p, current);
-        mpz_mod(p, p, MAX);
+        mpz_mod(p, p, N);
     }
-    mpz_mod(p, p, MAX);
+    mpz_mod(p, p, N);
 
 
 }

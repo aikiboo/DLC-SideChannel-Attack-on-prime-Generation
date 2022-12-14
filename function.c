@@ -76,6 +76,6 @@ double correlation_coeff(double *X, double *Y, int size) {
         sy = sy + pow(Y[i] - mean_Y, 2);
     }
     denum = sqrt(sx * sy);
-    if (denum == 0)return 2;
+    if (denum == 0)return 0;
     return num / denum;
 }

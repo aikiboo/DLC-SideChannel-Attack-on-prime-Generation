@@ -18,14 +18,14 @@ Renvoie l'indice de la valeur absolue maximale de la liste
 */
 unsigned long int argmax(double *L, int size) {
     double max = L[0];
-    int imax = 1;
+    int imax = 0;
     for (int i = 1; i < size; i++) {
         if (fabs(L[i]) > max) {
             max = fabs(L[i]);
             imax = i;
         }
     }
-    return imax;
+    return max == 0 ? 0 : imax;
 }
 
 int main(int argc, char const *argv[]) {
@@ -35,7 +35,7 @@ int main(int argc, char const *argv[]) {
     }
 
     FILE *fptrHamAndNoise = fopen(argv[1], "r");
-    int nbSievePrimes = atoi(argv[2]);
+    int nbSievePrimes = atoi(argv[2]) - 1;
     int nb_candidats = atoi(argv[3]);
     double tmp;
     int small_prime;
@@ -70,6 +70,7 @@ int main(int argc, char const *argv[]) {
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
         double score[small_prime];
+        score[0] = 0;
         for (int h = 1; h < small_prime; h++) {
             //mpz_set_ui(z_h,h);
             double hypothesis[nb_candidats];
@@ -82,14 +83,16 @@ int main(int argc, char const *argv[]) {
                 mpz_mul_ui(z_m, z_m, 2);
                 mpz_sub(z_h, z_h, z_m);
                 mpz_mod(z_h, z_h, sievePrimeList[j]);
-                hypothesis[i] = A * mpz_popcount(z_h) + B; //w(h - (n - i - 1)*2 mod sj)
-                comparaisons[i] = mesures[i][j];
+                hypothesis[i] = mpz_popcount(z_h); //w(h - (n - i - 1)*2 mod sj)
+                comparaisons[i] = (mesures[i][j] - B) / A;
             }
 
             score[h] = correlation_coeff(hypothesis, comparaisons, nb_candidats);
 
         }
-
+        if (j == 10) {
+            // for(int l = 0;l<small_prime;l++)printf("Debug : %f \n",score[l]);
+        }
         candidats[j] = argmax(score, small_prime);
         gmp_printf("p congru à %lu  mod %Zd \n", candidats[j], sievePrimeList[j]);
 
