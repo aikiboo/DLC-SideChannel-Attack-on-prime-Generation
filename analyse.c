@@ -24,6 +24,9 @@ unsigned long int argmax(double *L, int size) {
             max = fabs(L[i]);
             imax = i;
         }
+        else if(fabs(L[i]) == max){
+            printf("EQUAUX\n");
+        }
     }
     return max == 0 ? 0 : imax;
 }
@@ -61,12 +64,13 @@ int main(int argc, char const *argv[]) {
     */
 
     for (int i = 0; i < nb_candidats; i++) {
-        for (int j = 0; j < nbSievePrimes; j++) {
+        for (int j = -1; j < nbSievePrimes; j++) {
             fscanf(fptrHamAndNoise, "%lf", &tmp);
+            if(j<0)continue;
             mesures[i][j] = tmp;
         }
     }
-
+    int tmp2;
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
         double score[small_prime];
@@ -75,13 +79,10 @@ int main(int argc, char const *argv[]) {
             //mpz_set_ui(z_h,h);
             double hypothesis[nb_candidats];
             double comparaisons[nb_candidats];
-            for (int i = 0; i < nb_candidats; i++) {
-                mpz_set_ui(z_h, h);
-                mpz_set_ui(z_m, nb_candidats);
-                mpz_sub_ui(z_m, z_m, i);
-                mpz_sub_ui(z_m, z_m, 1);
-                mpz_mul_ui(z_m, z_m, 2);
-                mpz_sub(z_h, z_h, z_m);
+            for (int i = 0; (i < nb_candidats); i++) {
+                //m(h − (n − i − 1)τ mod sj )
+                tmp2 = h - (nb_candidats-i-1)*2 ;
+                mpz_set_ui(z_h, tmp2);
                 mpz_mod(z_h, z_h, sievePrimeList[j]);
                 hypothesis[i] = mpz_popcount(z_h); //w(h - (n - i - 1)*2 mod sj)
                 comparaisons[i] = (mesures[i][j] - B) / A;
@@ -93,7 +94,7 @@ int main(int argc, char const *argv[]) {
         if (j == 10) {
             // for(int l = 0;l<small_prime;l++)printf("Debug : %f \n",score[l]);
         }
-        candidats[j] = argmax(score, small_prime);
+        candidats[j] = argmax(score, small_prime)+1;
         gmp_printf("p congru à %lu  mod %Zd \n", candidats[j], sievePrimeList[j]);
 
     }
