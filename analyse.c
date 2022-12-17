@@ -94,7 +94,7 @@ int main(int argc, char const *argv[]) {
         if (j == 10) {
             // for(int l = 0;l<small_prime;l++)printf("Debug : %f \n",score[l]);
         }
-        candidats[j] = argmax(score, small_prime)+1;
+        candidats[j] = argmax(score, small_prime);
         gmp_printf("p congru à %lu  mod %Zd \n", candidats[j], sievePrimeList[j]);
 
     }
