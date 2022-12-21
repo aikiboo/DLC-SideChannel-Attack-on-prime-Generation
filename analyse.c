@@ -7,29 +7,52 @@
 #define A 2
 #define B 3
 
-
-/*
-  Calcul les k premiers et les stocke dans sievePrimeList.
-*/
+typedef struct {
+    int size;
+    unsigned int array[10];
+} ArgResults;
 
 
 /*
 Renvoie l'indice de la valeur absolue maximale de la liste
 */
-unsigned long int argmax(double *L, int size) {
+ArgResults* argmax(double *L, int size) {
     double max = L[0];
-    int imax = 0;
+    ArgResults *results= malloc(sizeof(ArgResults));
+    results->size = 1;
+    results->array[0] = 0;
     for (int i = 1; i < size; i++) {
         if (fabs(L[i]) > max) {
             max = fabs(L[i]);
-            imax = i;
+            results->array[0] = i;
+            results->size = 1;
         }
         else if(fabs(L[i]) == max){
-            printf("EQUAUX\n");
+            printf("EGAUX\n");
+            results->array[results->size++] = i;
         }
     }
-    return max == 0 ? 0 : imax;
+    return results;
 }
+
+void processArgResults(mpz_t p, mpz_t *sievePrimeList, ArgResults**candidats, int nbSievePrimes,int index,unsigned int *toProcessArray)
+{
+    if(index == nbSievePrimes){
+        chinese_remainder_theorem(p, sievePrimeList, toProcessArray, nbSievePrimes);
+        gmp_printf("p possible :%Zu\n",p);
+    }
+    else{
+        ArgResults* tmp = candidats[index];
+        //printf("Debug size = %d, %p, %d\n",tmp->size,tmp,index);
+
+        for(int i =0;i<tmp->size;i++){
+            toProcessArray[index] = tmp->array[i];
+     //       gmp_printf("p congru à %lu  mod %Zd \n", toProcessArray[index], sievePrimeList[index]);
+            processArgResults(p,sievePrimeList,candidats,nbSievePrimes,index+1,toProcessArray);
+        }
+    }
+}
+
 
 int main(int argc, char const *argv[]) {
     if (argc < 4) {
@@ -44,7 +67,7 @@ int main(int argc, char const *argv[]) {
     int small_prime;
     mpz_t z_h, z_m, p;
     mpz_inits(z_h, z_m, p, NULL);
-    unsigned long int candidats[nbSievePrimes];
+    ArgResults* candidats[nbSievePrimes];
     double mesures[nb_candidats][nbSievePrimes];
     mpz_t *sievePrimeList;
 
@@ -95,11 +118,10 @@ int main(int argc, char const *argv[]) {
             // for(int l = 0;l<small_prime;l++)printf("Debug : %f \n",score[l]);
         }
         candidats[j] = argmax(score, small_prime);
-        gmp_printf("p congru à %lu  mod %Zd \n", candidats[j], sievePrimeList[j]);
 
     }
-
-    chinese_remainder_theorem(p, sievePrimeList, candidats, nbSievePrimes);
+    unsigned int tab[nbSievePrimes];
+    processArgResults(p,sievePrimeList,candidats,nbSievePrimes,0,tab);
     gmp_printf("p = %Zd\n", p);
 
 }

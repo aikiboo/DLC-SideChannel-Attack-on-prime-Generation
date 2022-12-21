@@ -1,7 +1,7 @@
 #include "function.h"
 
 
-void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned long int *candidats, int nbSievePrimes) {
+void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned int *candidats, int nbSievePrimes) {
     mpz_t N;
     mpz_t current;
     mpz_t Ni;
@@ -14,7 +14,7 @@ void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned long int
     for (int i = 0; i < nbSievePrimes; i++) {
         mpz_mul(N, N, sievePrimeList[i]);
     }
-    gmp_printf("Debug :\nN = %Zu\n", N);
+    //gmp_printf("Debug :\nN = %Zu\n", N);
     for (int i = 0; i < nbSievePrimes; i++) {
         mpz_divexact(Ni, N, sievePrimeList[i]);
         mpz_invert(inv_Ni, Ni, sievePrimeList[i]);
