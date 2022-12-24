@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <time.h>
 #include "gauss.c"
+#include "function.h"
 
 #define A 2
 #define B 3
-#define PRIME 1
-#define COMPOSITE 0
 
 /*
 Structure pour notre tableau de résidus
@@ -16,34 +15,6 @@ typedef struct {
     int has_a_0;
     mpz_t *array;
 } MpzResidues;
-
-/*
-  Calcul les k premiers et les stocke dans sievePrimeList.
-*/
-void find_k_first_primes(int size, mpz_t *sievePrimeList) {
-    mpz_t current;
-    int i = 0, j, isPrime;
-
-    mpz_init(current);
-    mpz_set_ui(current, 2);
-
-    while (i < size) {
-        isPrime = 1;
-
-        for (j = 0; j < i && isPrime; j++) {
-            if (mpz_divisible_p(current, sievePrimeList[j]))isPrime = 0;
-        }
-
-        if (isPrime) {
-            mpz_init(sievePrimeList[i]);
-            mpz_set(sievePrimeList[i], current);
-            i++;
-        }
-
-        mpz_add_ui(current, current, 1);
-    }
-
-}
 
 /*
   génère un nombre de k bits

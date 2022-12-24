@@ -28,7 +28,6 @@ ArgResults* argmax(double *L, int size) {
             results->size = 1;
         }
         else if(fabs(L[i]) == max){
-            printf("EGAUX\n");
             results->array[results->size++] = i;
         }
     }
@@ -39,7 +38,7 @@ void processArgResults(mpz_t p, mpz_t *sievePrimeList, ArgResults**candidats, in
 {
     if(index == nbSievePrimes){
         chinese_remainder_theorem(p, sievePrimeList, toProcessArray, nbSievePrimes);
-        gmp_printf("p possible :%Zu\n",p);
+        //gmp_printf("p possible :%Zu\n",p);
     }
     else{
         ArgResults* tmp = candidats[index];
@@ -61,7 +60,7 @@ int main(int argc, char const *argv[]) {
     }
 
     FILE *fptrHamAndNoise = fopen(argv[1], "r");
-    int nbSievePrimes = atoi(argv[2]) - 1;
+    int nbSievePrimes = atoi(argv[2]);
     int nb_candidats = atoi(argv[3]);
     double tmp;
     int small_prime;
@@ -85,15 +84,16 @@ int main(int argc, char const *argv[]) {
     /*
     Récupération des mesures
     */
-
     for (int i = 0; i < nb_candidats; i++) {
-        for (int j = -1; j < nbSievePrimes; j++) {
+        for (int j = 0; j < nbSievePrimes; j++) {
             fscanf(fptrHamAndNoise, "%lf", &tmp);
-            if(j<0)continue;
             mesures[i][j] = tmp;
+            printf("%f\t",tmp);
         }
+        printf("\n");
     }
-    int tmp2;
+    int tmp2,totalP=1;
+
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
         double score[small_prime];
@@ -105,21 +105,25 @@ int main(int argc, char const *argv[]) {
             for (int i = 0; (i < nb_candidats); i++) {
                 //m(h − (n − i − 1)τ mod sj )
                 tmp2 = h - (nb_candidats-i-1)*2 ;
-                mpz_set_ui(z_h, tmp2);
-                mpz_mod(z_h, z_h, sievePrimeList[j]);
-                hypothesis[i] = mpz_popcount(z_h); //w(h - (n - i - 1)*2 mod sj)
-                comparaisons[i] = (mesures[i][j] - B) / A;
+                mpz_set_si(z_h, tmp2);
+                mpz_mod_ui(z_h, z_h, small_prime);
+                hypothesis[i] = mpz_popcount(z_h)*A+B; //w(h - (n - i - 1)*2 mod sj)
+                comparaisons[i] = mesures[i][j];
             }
 
             score[h] = correlation_coeff(hypothesis, comparaisons, nb_candidats);
 
         }
-        if (j == 10) {
-            // for(int l = 0;l<small_prime;l++)printf("Debug : %f \n",score[l]);
-        }
         candidats[j] = argmax(score, small_prime);
+        gmp_printf("Congru à %Zd : %d possibilitées\t",sievePrimeList[j],candidats[j]->size);
+        for(int l = 0;l<candidats[j]->size;l++){
+            printf("%u: %f\t",candidats[j]->array[l],score[candidats[j]->array[l]]);
+        }
+        printf("\n");
+        totalP*=candidats[j]->size;
 
     }
+    printf("Total : %d possibilitées\n",totalP);
     unsigned int tab[nbSievePrimes];
     processArgResults(p,sievePrimeList,candidats,nbSievePrimes,0,tab);
     gmp_printf("p = %Zd\n", p);

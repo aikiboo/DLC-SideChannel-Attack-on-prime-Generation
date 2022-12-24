@@ -9,7 +9,7 @@ int main(int argc, char const *argv[]) {
 
     mpz_t p;
     mpz_t primes[3];
-    unsigned long candidats[3] = {3, 4, 5};
+    unsigned int candidats[3] = {3, 4, 5};
 
     mpz_inits(p, primes[0], primes[1], primes[2], NULL);
     mpz_set_ui(primes[0], 17);
