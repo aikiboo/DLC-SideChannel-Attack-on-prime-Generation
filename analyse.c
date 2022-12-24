@@ -38,7 +38,7 @@ void processArgResults(mpz_t p, mpz_t *sievePrimeList, ArgResults**candidats, in
 {
     if(index == nbSievePrimes){
         chinese_remainder_theorem(p, sievePrimeList, toProcessArray, nbSievePrimes);
-        //gmp_printf("p possible :%Zu\n",p);
+        gmp_printf("p possible :%Zu\n",p);
     }
     else{
         ArgResults* tmp = candidats[index];
@@ -88,9 +88,9 @@ int main(int argc, char const *argv[]) {
         for (int j = 0; j < nbSievePrimes; j++) {
             fscanf(fptrHamAndNoise, "%lf", &tmp);
             mesures[i][j] = tmp;
-            printf("%f\t",tmp);
+            //printf("%f\t",tmp);
         }
-        printf("\n");
+        //printf("\n");
     }
     int tmp2,totalP=1;
 
