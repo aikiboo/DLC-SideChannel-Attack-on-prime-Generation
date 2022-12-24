@@ -6,7 +6,7 @@
 #include "function.h"
 #define A 2
 #define B 3
-
+ //1353489595387284226541759837701112606791527571
 typedef struct {
     int size;
     unsigned int array[10];
