@@ -79,3 +79,23 @@ double correlation_coeff(double *X, double *Y, int size) {
     if (denum == 0)return 0;
     return num / denum;
 }
+
+double euclidean_norm(double *vector, int size) {
+    double norm = 0;
+    for (int i = 0 ; i < size ; i++) {
+        norm = norm + pow(vector[i],2);
+    }
+    return sqrt(norm);
+}
+
+unsigned int argmin(double *L, int size) {
+   double min = L[0];
+   int ind_min = 0;
+   for (int i = 0; i< size ; i++) {
+        if( L[i] < min) {
+            min = L[i];
+            ind_min = i;
+        }
+   }
+   return ind_min;
+}
