@@ -6,7 +6,6 @@
 #include "function.h"
 #define A 2
 #define B 3
- //1353489595387284226541759837701112606791527571
 typedef struct {
     int size;
     unsigned int array[10];
@@ -14,7 +13,7 @@ typedef struct {
 
 
 /*
-Renvoie l'indice de la valeur absolue maximale de la liste
+Renvoie les indices de la valeur absolue maximale de la liste
 */
 ArgResults* argmax(double *L, int size) {
     double max = L[0];
@@ -33,12 +32,22 @@ ArgResults* argmax(double *L, int size) {
     }
     return results;
 }
-
+/**
+ * Utilise une liste de liste de candidats possibles afin de calculer tous les résultats possibles.
+ * @param p
+ * @param sievePrimeList
+ * @param candidats
+ * @param nbSievePrimes
+ * @param index
+ * @param toProcessArray
+ */
 void processArgResults(mpz_t p, mpz_t *sievePrimeList, ArgResults**candidats, int nbSievePrimes,int index,unsigned int *toProcessArray)
 {
     if(index == nbSievePrimes){
         chinese_remainder_theorem(p, sievePrimeList, toProcessArray, nbSievePrimes);
+        //if(mpz_sizeinbase(p,2) == 256)
         gmp_printf("p possible :%Zu\n",p);
+        //gmp_printf("size : %zu\n",mpz_sizeinbase(p,2));
     }
     else{
         ArgResults* tmp = candidats[index];
@@ -51,6 +60,51 @@ void processArgResults(mpz_t p, mpz_t *sievePrimeList, ArgResults**candidats, in
         }
     }
 }
+
+double getB(double** mesures,int sizeX,int sizeY){
+    double min,total=0;
+    double tmpMean;
+    int div = sizeX-1;
+    for(int i = 0;i<sizeX-1;i++){
+        min = 100;
+        for(int j = 0;j<sizeY;j++){
+            if(mesures[i][j]<min)min = mesures[i][j];
+        }
+        if(i>5 && (min<tmpMean*0.33 || min>tmpMean*3)) {
+            div --;
+            continue;
+        };
+
+        tmpMean = total/(i+1-(sizeX-1-div));
+        total+=min;
+    }
+    return total/div;
+}
+
+double getA(double** mesures,int sizeX,int sizeY,double b){
+    int minI;
+    double min;
+    double total=0;
+    int div = sizeX-1;
+    for(int i = 0;i<sizeX-1;i++){
+        min = 100;
+        for(int j = 0;j<sizeY;j++){
+            if(mesures[i][j]<min){
+                min = mesures[i][j];
+                minI = j;
+            }
+        }
+        if(min >b) {
+            div--;
+            continue;
+        }
+        total += (mesures[i+1][minI]-b);
+        //printf("%f\n",(mesures[i+1][minI]-min));
+    }
+
+    return total/(div);
+}
+
 
 
 int main(int argc, char const *argv[]) {
@@ -67,7 +121,8 @@ int main(int argc, char const *argv[]) {
     mpz_t z_h, z_m, p;
     mpz_inits(z_h, z_m, p, NULL);
     ArgResults* candidats[nbSievePrimes];
-    double mesures[nb_candidats][nbSievePrimes];
+    double** mesures;
+    mesures = malloc(sizeof(double*)*nb_candidats);
     mpz_t *sievePrimeList;
 
     //setup du gen random
@@ -85,6 +140,7 @@ int main(int argc, char const *argv[]) {
     Récupération des mesures
     */
     for (int i = 0; i < nb_candidats; i++) {
+        mesures[i] = malloc(sizeof(double)*nbSievePrimes);
         for (int j = 0; j < nbSievePrimes; j++) {
             fscanf(fptrHamAndNoise, "%lf", &tmp);
             mesures[i][j] = tmp;
@@ -92,6 +148,9 @@ int main(int argc, char const *argv[]) {
         }
         //printf("\n");
     }
+    double b = getB(mesures,nb_candidats,nbSievePrimes);
+    printf("B = %f\n", b);
+    printf("A = %f\n", getA(mesures,nb_candidats,nbSievePrimes,b));
     int tmp2,totalP=1;
 
     for (int j = 0; j < nbSievePrimes; j++) {
