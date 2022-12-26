@@ -4,8 +4,7 @@
 #include <time.h>
 #include <math.h>
 #include "function.h"
-#define A 2
-#define B 3
+
  //1353489595387284226541759837701112606791527571
 typedef struct {
     int size;
@@ -42,7 +41,51 @@ unsigned int argmax(double *L, double **H, int size, double norm_comp) {
 
     return results->array[argmin(diff_norms, results->size)];
 }
-    
+   
+double getB(double** mesures,int sizeX,int sizeY){
+    double min,total=0;
+    double tmpMean;
+    int div = sizeX-1;
+    for(int i = 0;i<sizeX-1;i++){
+        min = 100;
+        for(int j = 0;j<sizeY;j++){
+            if(mesures[i][j]<min)min = mesures[i][j];
+        }
+        if(i>5 && (min<tmpMean*0.33 || min>tmpMean*3)) {
+            div --;
+            continue;
+        };
+
+        tmpMean = total/(i+1-(sizeX-1-div));
+        total+=min;
+    }
+    return total/div;
+}
+
+double getA(double** mesures,int sizeX,int sizeY,double b){
+    int minI;
+    double min;
+    double total=0;
+    int div = sizeX-1;
+    for(int i = 0;i<sizeX-1;i++){
+        min = 100;
+        for(int j = 0;j<sizeY;j++){
+            if(mesures[i][j]<min){
+                min = mesures[i][j];
+                minI = j;
+            }
+        }
+        if(min >b) {
+            div--;
+            continue;
+        }
+        total += (mesures[i+1][minI]-b);
+        //printf("%f\n",(mesures[i+1][minI]-min));
+    }
+
+    return total/(div);
+}
+
 
 int main(int argc, char const *argv[]) {
     if (argc < 4) {
@@ -59,7 +102,8 @@ int main(int argc, char const *argv[]) {
     mpz_t z_h, z_m, p;
     mpz_inits(z_h, z_m, p, NULL);
     unsigned int candidats[nbSievePrimes];
-    double mesures[nb_candidats][nbSievePrimes];
+    double** mesures;
+    mesures = malloc(sizeof(double*)*nb_candidats);
     mpz_t *sievePrimeList;
 
     //setup du gen random
@@ -75,13 +119,18 @@ int main(int argc, char const *argv[]) {
     Récupération des mesures
     */
     for (int i = 0; i < nb_candidats; i++) {
+        mesures[i] = malloc(sizeof(double)*nbSievePrimes);
         for (int j = 0; j < nbSievePrimes; j++) {
             fscanf(fptrHamAndNoise, "%lf", &tmp);
             mesures[i][j] = tmp;
         }
     }
 
-    int tmp2; 
+    double b = getB(mesures,nb_candidats,nbSievePrimes);
+    printf("B = %f\n", b);
+    double a = getA(mesures,nb_candidats,nbSievePrimes,b);
+    printf("A = %f\n", a);
+    int tmp2;
 
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
@@ -97,7 +146,7 @@ int main(int argc, char const *argv[]) {
                 tmp2 = h - (nb_candidats-i-1)*2 ;
                 mpz_set_si(z_h, tmp2);
                 mpz_mod_ui(z_h, z_h, small_prime);
-                hypothesis[i] = mpz_popcount(z_h)*A+B; //w(h - (n - i - 1)*2 mod sj)
+                hypothesis[i] = mpz_popcount(z_h)*a+b; //w(h - (n - i - 1)*2 mod sj)
                 comparaisons[i] = mesures[i][j];
             }
             score[h] = correlation_coeff(hypothesis, comparaisons, nb_candidats);
