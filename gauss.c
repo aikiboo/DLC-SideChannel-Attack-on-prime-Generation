@@ -4,7 +4,6 @@
 double gauss(void) {
     static double x0, x1;
     static unsigned int nb_ready;
-
     double u, v, w, z;
 
     if (nb_ready == 0) {

@@ -75,6 +75,7 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
+    srand(time(NULL));
     int size = 0, nbSievePrimes = 0,nb_candidats=1;
     mpz_t tmpRand;
     mpz_t *sievePrimeList;
