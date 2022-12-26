@@ -51,11 +51,12 @@ double getB(double** mesures,int sizeX,int sizeY){
         for(int j = 0;j<sizeY;j++){
             if(mesures[i][j]<min)min = mesures[i][j];
         }
+        /*
         if(i>5 && (min<tmpMean*0.33 || min>tmpMean*3)) {
             div --;
             continue;
         }
-
+*/
         tmpMean = total/(i+1-(sizeX-1-div));
         total+=min;
     }
