@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "function.h"
+#include "common/function.h"
 
  //1353489595387284226541759837701112606791527571
 typedef struct {

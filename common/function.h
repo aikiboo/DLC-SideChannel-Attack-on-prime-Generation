@@ -14,4 +14,10 @@ double euclidean_norm(double *vector, int size);
 
 unsigned int argmin(double *L, int size);
 
+/*
+  génère un nombre de k bits
+*/
+void gen_k_bits_number(mpz_t out, int size, gmp_randstate_t randstate);
+
+
 #endif //DLC_SIDECHANNEL_ATTACK_ON_PRIME_GENERATION_FUNCTION_H

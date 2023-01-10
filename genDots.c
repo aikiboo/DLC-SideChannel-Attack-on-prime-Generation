@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "gauss.c"
-#include "function.h"
+#include "common/function.h"
 
 #define A 2
 #define B 3
@@ -19,15 +19,7 @@ typedef struct {
 /*
   génère un nombre de k bits
 */
-void gen_k_bits_number(mpz_t out, int size, gmp_randstate_t randstate) {
-    mpz_t offset;
-    mpz_inits(offset, out, NULL);
-    mpz_set_ui(offset, 2);
-    mpz_pow_ui(offset, offset, size - 1);
-    mpz_urandomb(out, randstate, size - 1);
-    mpz_add(out, out, offset);
-    mpz_clear(offset);
-}
+
 
 /*
 Renvoi un nombre impair, en appellant gen_k_bits_number() et, ajoute 1 si la sortie est pair

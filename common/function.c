@@ -99,3 +99,13 @@ unsigned int argmin(double *L, int size) {
    }
    return ind_min;
 }
+
+void gen_k_bits_number(mpz_t out, int size, gmp_randstate_t randstate) {
+    mpz_t offset;
+    mpz_inits(offset, out, NULL);
+    mpz_set_ui(offset, 2);
+    mpz_pow_ui(offset, offset, size - 1);
+    mpz_urandomb(out, randstate, size - 1);
+    mpz_add(out, out, offset);
+    mpz_clear(offset);
+}

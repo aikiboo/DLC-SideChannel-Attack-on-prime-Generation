@@ -1,4 +1,4 @@
-#include "function.h"
+#include "common/function.h"
 #include "gmp.h"
 #include "stdio.h"
 #include "stdlib.h"

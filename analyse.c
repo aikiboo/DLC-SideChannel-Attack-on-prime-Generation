@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "function.h"
+#include "./common/function.h"
 typedef struct {
     int size;
     unsigned int array[10];
@@ -44,20 +44,12 @@ unsigned int argmax(double *L, double **H, int size, double norm_comp) {
 
 double getB(double** mesures,int sizeX,int sizeY){
     double min,total=0;
-    double tmpMean;
     int div = sizeX-1;
     for(int i = 0;i<sizeX-1;i++){
         min = 100;
         for(int j = 0;j<sizeY;j++){
             if(mesures[i][j]<min)min = mesures[i][j];
         }
-        /*
-        if(i>5 && (min<tmpMean*0.33 || min>tmpMean*3)) {
-            div --;
-            continue;
-        }
-*/
-        tmpMean = total/(i+1-(sizeX-1-div));
         total+=min;
     }
     return total/div;
