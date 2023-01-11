@@ -13,6 +13,9 @@ genSeq: SPA/genSeq.c
 analyse: analyse.c
 	$(CC) $(CFLAGS) -o analyse common/function.c analyse.c  $(CLIBS)
 
+analyseSeq: SPA/analyseSeq.c
+	$(CC) $(CFLAGS) -o analyseSeq common/function.c SPA/analyseSeq.c  $(CLIBS)
+
 all: genDots analyse
 
 test: tests.c
