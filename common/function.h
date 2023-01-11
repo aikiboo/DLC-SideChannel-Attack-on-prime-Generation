@@ -19,5 +19,9 @@ unsigned int argmin(double *L, int size);
 */
 void gen_k_bits_number(mpz_t out, int size, gmp_randstate_t randstate);
 
+/*
+Renvoi un nombre impair, en appellant gen_k_bits_number() et, ajoute 1 si la sortie est pair
+*/
+void gen_k_bits_number_odd(mpz_t out, int size, gmp_randstate_t randstate);
 
 #endif //DLC_SIDECHANNEL_ATTACK_ON_PRIME_GENERATION_FUNCTION_H

@@ -17,21 +17,6 @@ typedef struct {
 } MpzResidues;
 
 /*
-  génère un nombre de k bits
-*/
-
-
-/*
-Renvoi un nombre impair, en appellant gen_k_bits_number() et, ajoute 1 si la sortie est pair
-*/
-void gen_k_bits_number_odd(mpz_t out, int size, gmp_randstate_t randstate) {
-    gen_k_bits_number(out, size, randstate);
-    if (mpz_divisible_ui_p(out, 2)) {
-        mpz_add_ui(out, out, 1);
-    }
-}
-
-/*
 Petmet d'initialiser le tableau de résidus à 0
 */
 void update_residues_array(MpzResidues *mpzResidues, mpz_t value, int size, mpz_t *sievePrimeList) {

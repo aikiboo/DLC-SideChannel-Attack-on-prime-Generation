@@ -109,3 +109,10 @@ void gen_k_bits_number(mpz_t out, int size, gmp_randstate_t randstate) {
     mpz_add(out, out, offset);
     mpz_clear(offset);
 }
+
+void gen_k_bits_number_odd(mpz_t out, int size, gmp_randstate_t randstate) {
+    gen_k_bits_number(out, size, randstate);
+    if (mpz_divisible_ui_p(out, 2)) {
+        mpz_add_ui(out, out, 1);
+    }
+}
