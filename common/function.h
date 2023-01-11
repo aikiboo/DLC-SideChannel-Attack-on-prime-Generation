@@ -4,7 +4,9 @@
 #ifndef DLC_SIDECHANNEL_ATTACK_ON_PRIME_GENERATION_FUNCTION_H
 #define DLC_SIDECHANNEL_ATTACK_ON_PRIME_GENERATION_FUNCTION_H
 
-void chinese_remainder_theorem(mpz_t p, mpz_t *sievePrimeList, unsigned int *candidats, int nbSievePrimes);
+void chinese_remainder_theorem_cpa(mpz_t p, mpz_t *sievePrimeList, unsigned int *candidats, int nbSievePrimes);
+
+void chinese_remainder_theorem_spa(mpz_t p, mpz_t *divisors, mpz_t *congruences, int nb_divisors);
 
 void find_k_first_primes(int size, mpz_t *sievePrimeList);
 
