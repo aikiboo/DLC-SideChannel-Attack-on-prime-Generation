@@ -48,4 +48,6 @@ void main(int argc, char const *argv[]) {
         mpz_add_ui(tmpRand,tmpRand,2);
     }
     fclose(output);
+    printf("Is prime (1=prob,2=100\%) : %d\n", mpz_probab_prime_p(tmpRand, 10));
+    gmp_printf("Premier: \t%Zu\n", tmpRand);
 }
