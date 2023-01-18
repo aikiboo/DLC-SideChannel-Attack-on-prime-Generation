@@ -33,12 +33,12 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
    char tmp;
 
    mpz_t congru;
-    
+
    fseek(output,0,SEEK_SET);
    int j = 1;
    mpz_set_ui(divisors[0],2);
    mpz_set_ui(congruences[0],1);
-   
+
 
    while(j < nb_candidats){
       fscanf(output, "%c", &tmp);
@@ -62,13 +62,12 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
          j++;        
       }
     }
-
    //Suppression des doublons
    nbDivisors = nb_candidats;
    for (int i = 0; i < nbDivisors; i++) {
       for (int j = i + 1; j < nbDivisors;) {
          if (mpz_cmp(divisors[j],divisors[i]) == 0) {
-            for (int k = j; k < nbDivisors; k++) {
+            for (int k = j; k < nbDivisors-1; k++) {
                mpz_set(divisors[k],divisors[k+1]);
                mpz_set(congruences[k], congruences[k+1]);
             }
@@ -78,7 +77,6 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
          }
       }
     }
-
    //Suppression des zéros
    int izero = 0;
    while (mpz_cmp_ui(divisors[izero],0) != 0) {
@@ -184,18 +182,17 @@ int main(int argc, char const *argv[]) {
    
    for (int i = 0; i < nb_candidatsP; i++){
       mpz_inits(divisorsP[i], congruencesP[i], divisorForEachCandidateP[i],NULL);
-   } 
+   }
 
     
    int nbDivisorsP = find_divisors(divisorsP, congruencesP, divisorForEachCandidateP, sievePrimeList, nb_candidatsP, outputP);
    fclose(outputP);
    
    mpz_init(ap);
+
    mpz_t sp;
-   mpz_init(sp);
 
    chinese_remainder_theorem_spa(ap, sp, divisorsP, congruencesP, nbDivisorsP);
-
    if (mpz_divisible_p(N,ap) != 0 && mpz_cmp_ui(ap,1) != 0) { //On a trouvé p
       mpz_t q;
       mpz_init(q);
@@ -204,15 +201,12 @@ int main(int argc, char const *argv[]) {
       gmp_printf("q = %Zd\n", q);     
    }
    else {
-      
-      mpz_t aq;
-      mpz_t inv_ap;
+
+      mpz_t aq, inv_ap;
       mpz_inits(aq, inv_ap, NULL);
       mpz_invert(inv_ap, ap, sp);
       mpz_mul(aq,inv_ap,N);
       mpz_mod(aq,aq,sp);
-
-
       printf("On tente de retrouver q\n");
       FILE *outputQ = fopen(argv[2], "r");
       mpz_t bq;
@@ -228,9 +222,10 @@ int main(int argc, char const *argv[]) {
       divisorForEachCandidateQ = malloc(sizeof(mpz_t) * nb_candidatsQ);
       for (int i = 0; i < nb_candidatsQ; i++){
          mpz_inits(divisorsQ[i], congruencesQ[i], divisorForEachCandidateQ[i],NULL);
-      } 
-  
+      }
+
       int nbDivisorsQ = find_divisors(divisorsQ, congruencesQ, divisorForEachCandidateQ, sievePrimeList, nb_candidatsQ, outputQ);
+
       fclose(outputQ);
 
       mpz_t sq;
