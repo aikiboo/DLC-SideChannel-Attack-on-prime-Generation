@@ -46,13 +46,13 @@ int main(int argc, char const *argv[]) {
     mpz_t *congruences;
     congruences = malloc(sizeof(mpz_t) * nb_candidats);
     mpz_t congru;
-    
+
     fseek(output,0,SEEK_SET);
     int j = 1;
     mpz_inits(divisors[0], congruences[0],NULL);
     mpz_set_ui(divisors[0],2);
     mpz_set_ui(congruences[0],1);
-    
+
 
     while(j < nb_candidats){
     	fscanf(output, "%c", &tmp);
@@ -103,7 +103,5 @@ int main(int argc, char const *argv[]) {
     nb_divisors--;
     mpz_init(p);
     chinese_remainder_theorem_spa(p, divisors, congruences, nb_divisors);
- 	gmp_printf("p = %Zd\n", p);
-
-    }
-
+ 	  gmp_printf("p = %Zd\n", p);
+}
