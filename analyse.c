@@ -109,8 +109,6 @@ int main(int argc, char const *argv[]) {
     sievePrimeList = malloc(sizeof(mpz_t) * nbSievePrimes);
     find_k_first_primes(nbSievePrimes, sievePrimeList);
 
-
-
     /*
     Récupération des mesures
     */
@@ -123,11 +121,12 @@ int main(int argc, char const *argv[]) {
         }
         //printf("\n");
     }
+
     double b = getB(mesures,nb_candidats,nbSievePrimes);
     printf("B = %f\n", b);
     double a = getA(mesures, nb_candidats, nbSievePrimes, b);
     printf("A = %f\n", a);
-    int tmp2,totalP=1;
+    int tmp2;
 
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);

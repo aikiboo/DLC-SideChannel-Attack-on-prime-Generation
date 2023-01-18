@@ -16,7 +16,7 @@ analyse: analyse.c
 analyseSeq: SPA/analyseSeq.c
 	$(CC) $(CFLAGS) -o analyseSeq common/function.c SPA/analyseSeq.c  $(CLIBS)
 
-all: genDots analyse
+all: genDots analyse genSeq analyseSeq
 
 test: tests.c
 	$(CC) $(CFLAGS) -o tests common/function.c tests.c  $(CLIBS)
