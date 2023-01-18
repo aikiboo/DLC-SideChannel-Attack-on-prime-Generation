@@ -1,3 +1,5 @@
+#include "function.h"
+
 void chinese_remainder_theorem_cpa(mpz_t p, mpz_t *sievePrimeList, unsigned int *candidats, int nbSievePrimes) {
     mpz_t N;
     mpz_t current;
