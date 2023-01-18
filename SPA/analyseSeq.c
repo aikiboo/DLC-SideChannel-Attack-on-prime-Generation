@@ -33,12 +33,12 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
    char tmp;
 
    mpz_t congru;
-
+    
    fseek(output,0,SEEK_SET);
    int j = 1;
    mpz_set_ui(divisors[0],2);
    mpz_set_ui(congruences[0],1);
-
+   
 
    while(j < nb_candidats){
       fscanf(output, "%c", &tmp);
@@ -62,6 +62,7 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
          j++;        
       }
     }
+
    //Suppression des doublons
    nbDivisors = nb_candidats;
    for (int i = 0; i < nbDivisors; i++) {
@@ -77,6 +78,7 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
          }
       }
     }
+
    //Suppression des zéros
    int izero = 0;
    while (mpz_cmp_ui(divisors[izero],0) != 0) {
@@ -182,17 +184,18 @@ int main(int argc, char const *argv[]) {
    
    for (int i = 0; i < nb_candidatsP; i++){
       mpz_inits(divisorsP[i], congruencesP[i], divisorForEachCandidateP[i],NULL);
-   }
+   } 
 
     
    int nbDivisorsP = find_divisors(divisorsP, congruencesP, divisorForEachCandidateP, sievePrimeList, nb_candidatsP, outputP);
    fclose(outputP);
    
    mpz_init(ap);
-
    mpz_t sp;
+   mpz_init(sp);
 
    chinese_remainder_theorem_spa(ap, sp, divisorsP, congruencesP, nbDivisorsP);
+
    if (mpz_divisible_p(N,ap) != 0 && mpz_cmp_ui(ap,1) != 0) { //On a trouvé p
       mpz_t q;
       mpz_init(q);
@@ -201,12 +204,15 @@ int main(int argc, char const *argv[]) {
       gmp_printf("q = %Zd\n", q);     
    }
    else {
-
-      mpz_t aq, inv_ap;
+      
+      mpz_t aq;
+      mpz_t inv_ap;
       mpz_inits(aq, inv_ap, NULL);
       mpz_invert(inv_ap, ap, sp);
       mpz_mul(aq,inv_ap,N);
       mpz_mod(aq,aq,sp);
+
+
       printf("On tente de retrouver q\n");
       FILE *outputQ = fopen(argv[2], "r");
       mpz_t bq;
@@ -222,10 +228,9 @@ int main(int argc, char const *argv[]) {
       divisorForEachCandidateQ = malloc(sizeof(mpz_t) * nb_candidatsQ);
       for (int i = 0; i < nb_candidatsQ; i++){
          mpz_inits(divisorsQ[i], congruencesQ[i], divisorForEachCandidateQ[i],NULL);
-      }
-
+      } 
+  
       int nbDivisorsQ = find_divisors(divisorsQ, congruencesQ, divisorForEachCandidateQ, sievePrimeList, nb_candidatsQ, outputQ);
-
       fclose(outputQ);
 
       mpz_t sq;
@@ -289,6 +294,8 @@ int main(int argc, char const *argv[]) {
          }
                
          mpz_set(S[0],a);
+         mpz_mod(P[0],P[0],S[0]);
+         mpz_mod(P[1],P[1],S[1]);
            
          chinese_remainder_theorem_spa(p, s, S, P, 2);
    
@@ -298,6 +305,8 @@ int main(int argc, char const *argv[]) {
             gmp_printf("q = %Zd\n", q);
          }
          else {
+            mpz_mod(Q[0],Q[0],S[0]);
+            mpz_mod(Q[1],Q[1],S[1]);
             chinese_remainder_theorem_spa(q, s, S, Q, 2);
             if (mpz_divisible_p(N,q) != 0) {
                mpz_divexact(p,N,q);
@@ -349,14 +358,14 @@ int main(int argc, char const *argv[]) {
                      
                      //Recherche d'un non diviseur qui nous apporte assez d'infos
                      int c = nbNotDivisorsQ-1;
-                     while(nbMissingBitsQ > mpz_sizeinbase(not_divisorsQ[c],2)-1) {
+                     while(nbMissingBitsQ > mpz_sizeinbase(not_divisorsQ[c],2)-1 && c > 0) {
                         c--;
                      }
                            
                      unsigned long int nd;
                      mpz_t s2;
 
-                     while(mpz_divisible_p(N,q) == 0 && c >= 0) {
+                     while(mpz_divisible_p(N,q) == 0 && c <= nbNotDivisorsQ) {
                         mpz_init(pgcd);
                         mpz_gcd(pgcd, s,not_divisorsQ[c]);
                         mpz_t *D;
@@ -407,20 +416,25 @@ int main(int argc, char const *argv[]) {
                   
                   //Recherche d'un non diviseur qui nous apporte assez d'infos
                   int c = nbNotDivisorsP-1;
-                  while(nbMissingBitsP > mpz_sizeinbase(not_divisorsP[c],2)-1) {
+             
+                  while(nbMissingBitsP > mpz_sizeinbase(not_divisorsP[c],2)-1 && c > 0) {
                      c--;
+                     printf("c = %d\n",c);
                   }
+               
 
                   unsigned long int nd;
                   mpz_t s2;
+
                   while(mpz_divisible_p(N,p) == 0 && c <= nbNotDivisorsP) {
                      mpz_init(pgcd);
+                     printf("c = %d ; nbNotDivisorsP = %d\n",c,nbNotDivisorsP);
                      mpz_gcd(pgcd,s,not_divisorsP[c]);
-                     mpz_t *D;
-                     D = malloc(sizeof(mpz_t) * 2);
+                     mpz_t *D;              
+                     D = malloc(sizeof(mpz_t) * 2); 
                      mpz_inits(D[0], D[1], NULL);
                      mpz_t *C;
-                     C = malloc(sizeof(mpz_t) * 2);
+                     C = malloc(sizeof(mpz_t) * 2); 
                      mpz_inits(C[0], C[1], NULL);
                      mpz_set(D[0],s);
                      mpz_set(C[0],p);
@@ -430,16 +444,19 @@ int main(int argc, char const *argv[]) {
                         //Calcul de ce à quoi p n'est pas congru modulo ce non diviseurs
                         mpz_t *notCongruentP;
                         notCongruentP = malloc(sizeof(mpz_t) * nd);
+                        
                         int sizeNotCongruentP = not_congruent(notCongruentP, divisorForEachCandidateP, nd, nb_candidatsP);
-
+                 
+			
                         //Hypothèses sur p modulo le non diviseur
                         mpz_t *hypP;
                         int sizeHypP = nd - sizeNotCongruentP;
-                        hypP = malloc(sizeof(mpz_t) * sizeHypP);
+                        hypP = malloc(sizeof(mpz_t) * sizeHypP); 
                         find_hypothesis(hypP, notCongruentP, sizeNotCongruentP, nd);
-                        
                         int a = 0;
                         mpz_set_ui(D[1],nd);
+                        
+            
                         mpz_init(s2);
                         while(mpz_divisible_p(N,p) == 0 && a<sizeHypP) {
                            mpz_set(C[1],hypP[a]);
