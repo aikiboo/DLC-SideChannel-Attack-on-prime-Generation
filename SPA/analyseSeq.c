@@ -413,8 +413,7 @@ int main(int argc, char const *argv[]) {
 
                   unsigned long int nd;
                   mpz_t s2;
-
-                  while(mpz_divisible_p(N,p) == 0 && c >= 0) {
+                  while(mpz_divisible_p(N,p) == 0 && c <= nbNotDivisorsP) {
                      mpz_init(pgcd);
                      mpz_gcd(pgcd,s,not_divisorsP[c]);
                      mpz_t *D;
