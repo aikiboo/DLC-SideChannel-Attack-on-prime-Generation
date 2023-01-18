@@ -1,6 +1,3 @@
-#include "function.h"
-
-
 void chinese_remainder_theorem_cpa(mpz_t p, mpz_t *sievePrimeList, unsigned int *candidats, int nbSievePrimes) {
     mpz_t N;
     mpz_t current;
@@ -32,8 +29,7 @@ void chinese_remainder_theorem_cpa(mpz_t p, mpz_t *sievePrimeList, unsigned int 
     mpz_mod(p, p, N);
 }
 
-void chinese_remainder_theorem_spa(mpz_t p, mpz_t *divisors, mpz_t *congruences, int nb_divisors) {
-    mpz_t N;
+void chinese_remainder_theorem_spa(mpz_t p, mpz_t N, mpz_t *divisors, mpz_t *congruences, int nb_divisors) {
     mpz_t current;
     mpz_t Ni;
     mpz_t inv_Ni;
