@@ -35,9 +35,6 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
 
    fseek(output,0,SEEK_SET);
    int j = 1;
-   mpz_set_ui(divisors[0],2);
-   mpz_set_ui(congruences[0],1);
-
 
    while(j < nb_candidats){
       fscanf(output, "%c", &tmp);
@@ -87,7 +84,9 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
       mpz_set(divisors[i],divisors[i+1]);
       mpz_set(congruences[i],congruences[i+1]);
    }
-   nbDivisors--;
+   //nbDivisors--;
+   mpz_set_ui(divisors[nbDivisors-1],2);
+   mpz_set_ui(congruences[nbDivisors-1],1);
    return nbDivisors;
 }
 
@@ -169,7 +168,6 @@ int main(int argc, char const *argv[]) {
 
    printf("on tente de retrouver p\n");
    FILE *outputP = fopen(argv[1], "r");
-   mpz_t ap;
 
    int nb_candidatsP = find_nb_candidats(outputP);
    printf("nb_candidats = %d\n", nb_candidatsP);
@@ -186,14 +184,12 @@ int main(int argc, char const *argv[]) {
       mpz_inits(divisorsP[i], congruencesP[i], divisorForEachCandidateP[i],NULL);
    }
 
-
    int nbDivisorsP = find_divisors(divisorsP, congruencesP, divisorForEachCandidateP, sievePrimeList, nb_candidatsP, outputP);
    fclose(outputP);
-
-   mpz_init(ap);
-   mpz_t sp;
-   mpz_init(sp);
-
+   
+   mpz_t ap, sp;
+   mpz_inits(ap, sp, NULL);
+ 
    chinese_remainder_theorem_spa(ap, sp, divisorsP, congruencesP, nbDivisorsP);
 
    if (mpz_divisible_p(N,ap) != 0 && mpz_cmp_ui(ap,1) != 0) { //On a trouvé p
@@ -236,8 +232,7 @@ int main(int argc, char const *argv[]) {
       fclose(outputQ);
 
       chinese_remainder_theorem_spa(bq, sq, divisorsQ, congruencesQ, nbDivisorsQ);
-
-
+      
       if (mpz_divisible_p(N,bq) != 0 && mpz_cmp_ui(bq,1) != 0) { //On a trouvé q
          mpz_t p;
          mpz_init(p);
@@ -247,8 +242,6 @@ int main(int argc, char const *argv[]) {
 
       }
       else {   //On cherche à retrouver p mod ppcm(sp,sq) ou q mod ppcm(sp,sq)
-         
-         int i = 0;
 
          mpz_t bp, inv_bq, p, q, s, lcmS, a, pgcd,
               *S = malloc(sizeof(mpz_t)*2),
@@ -262,30 +255,18 @@ int main(int argc, char const *argv[]) {
          mpz_mod(bp,bp,sq);
          mpz_lcm(lcmS,sp,sq);
 
-         mpz_set_ui(S[1],1);
          mpz_set(P[0],ap);
          mpz_set(P[1],bp);
          mpz_set(Q[0],aq);
          mpz_set(Q[1],bq);
-         mpz_set(S[0], lcmS);
-         mpz_set(a,S[0]);
-       
-         
-         //Décomposition de ppcm(sp,sq) en produit de 2 entiers premiers entre eux
-         mpz_gcd(pgcd,a,S[1]);
+         mpz_set(S[0], sp);
+         mpz_divexact(S[1], lcmS, sp);
 
-         while(mpz_cmp_ui(pgcd,1) != 0 && i < nbDivisorsP) {
-            mpz_divexact(a,S[0],S[1]);
-            mpz_set(S[1],divisorsP[i]);
-            mpz_gcd(pgcd,a,S[1]);
-            i++;
-         }
-
-         mpz_set(S[0],a);
          mpz_mod(P[0],P[0],S[0]);
          mpz_mod(P[1],P[1],S[1]);
         
          chinese_remainder_theorem_spa(p, s, S, P, 2);
+         gmp_printf("size s = %d\n", mpz_sizeinbase(s,2));
 
          if (mpz_divisible_p(N,p) != 0 && mpz_cmp_ui(p,1) != 0) {
             mpz_divexact(q,N,p);
@@ -308,7 +289,7 @@ int main(int argc, char const *argv[]) {
 
                //Calcul du nombre de bits manquants
                int sizeP = mpz_sizeinbase(p,2);
-               float nbMissingBitsP = sizeN - ceil(sizeN/2) - sizeP;
+               float nbMissingBitsP = floor(sizeN/2) - sizeP;
                printf("missing bits = %f\n", nbMissingBitsP);
 
                //Calcul des petits premiers non diviseurs
@@ -325,7 +306,7 @@ int main(int argc, char const *argv[]) {
 
                   //Calcul du nombre de bits manquants
                   int sizeQ = mpz_sizeinbase(q,2);
-                  float nbMissingBitsQ = sizeN - ceil(sizeN/2) - sizeQ;
+                  float nbMissingBitsQ = floor(sizeN/2) - sizeQ;
                   printf("missing bits = %f\n", nbMissingBitsQ);
 
                   //Calcul des petits premiers non diviseurs
