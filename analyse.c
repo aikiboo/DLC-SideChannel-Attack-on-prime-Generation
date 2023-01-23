@@ -93,6 +93,10 @@ int main(int argc, char const *argv[]) {
     FILE *fptrHamAndNoise = fopen(argv[1], "r");
     int nbSievePrimes = atoi(argv[2]);
     int nb_candidats = atoi(argv[3]);
+    if(nb_candidats ==1){
+        printf("Trop peu de candidats. Echec\n");
+        exit(1);
+    }
     double norm_comp;
     double tmp;
     int small_prime;
