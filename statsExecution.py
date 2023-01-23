@@ -51,7 +51,7 @@ while (total <= toRun):
         SPA_RESULT[x] += SPA_func(x[0], x[1])
         print(f"{x} : {SPA_RESULT[x]}/{total}  ({round((SPA_RESULT[x] / total) * 100, 2)}%)")
 
-    print("SPA : ")
+    print("CPA : ")
     for x in CPA_RESULT:
         CPA_RESULT[x] += CPA_func(x[0], x[1])
         print(f"{x} : {CPA_RESULT[x]}/{total}  ({round((CPA_RESULT[x] / total) * 100, 2)}%)")
