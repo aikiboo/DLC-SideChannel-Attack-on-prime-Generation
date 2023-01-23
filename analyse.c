@@ -6,7 +6,7 @@
 #include "./common/function.h"
 typedef struct {
     int size;
-    unsigned int array[10];
+    unsigned int *array;
 } ArgResults;
 
 
@@ -18,6 +18,7 @@ unsigned int argmax(double *L, double **H, int size, double norm_comp) {
     double max = L[0];
     ArgResults *results= malloc(sizeof(ArgResults));
     results->size = 1;
+    results->array = malloc(sizeof(unsigned int)*size);
     results->array[0] = 0;
     for (int i = 1; i < size; i++) {
         if (fabs(L[i]) > max) {
@@ -36,8 +37,11 @@ unsigned int argmax(double *L, double **H, int size, double norm_comp) {
     for (int j = 0; j<results->size ; j++) {
         diff_norms[j] = fabs(euclidean_norm(possible_hypothesis[j], results->size) - norm_comp);
     }
+    int toReturn = results->array[argmin(diff_norms, results->size)];
     free(possible_hypothesis);
-    return results->array[argmin(diff_norms, results->size)];
+    free(results->array);
+    free(results);
+    return toReturn;
 }
 
 
