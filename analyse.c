@@ -14,7 +14,7 @@ typedef struct {
 Renvoie les indices de la valeur absolue maximale de la liste
 */
 unsigned int argmax(double *L, double **H, int size, double norm_comp) {
-    double* possible_hypothesis[10];
+    double** possible_hypothesis = malloc(sizeof(double *)*size);
     double max = L[0];
     ArgResults *results= malloc(sizeof(ArgResults));
     results->size = 1;
@@ -33,11 +33,10 @@ unsigned int argmax(double *L, double **H, int size, double norm_comp) {
         }
     }
     double diff_norms[results->size];
-
     for (int j = 0; j<results->size ; j++) {
         diff_norms[j] = fabs(euclidean_norm(possible_hypothesis[j], results->size) - norm_comp);
     }
-
+    free(possible_hypothesis);
     return results->array[argmin(diff_norms, results->size)];
 }
 
@@ -135,7 +134,7 @@ int main(int argc, char const *argv[]) {
         score[0] = 0;
         for (int h = 1; h < small_prime; h++) {
             //mpz_set_ui(z_h,h);
-            double hypothesis[nb_candidats];
+            double *hypothesis = malloc(sizeof(double)*nb_candidats);
             double comparaisons[nb_candidats];
             for (int i = 0; (i < nb_candidats); i++) {
                 //m(h − (n − i − 1)τ mod sj )
