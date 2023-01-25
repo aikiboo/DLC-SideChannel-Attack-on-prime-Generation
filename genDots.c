@@ -120,5 +120,17 @@ int main(int argc, char const *argv[]) {
     fclose(fptrHam2);
     fclose(fptrHamAndNoise);
 
+
+    for (int i = 0; i < nbSievePrimes; i++)mpz_clear(mpzResidues->array[i]);
+    free(mpzResidues->array);
+    free(mpzResidues);
+
+    //on clear le sieve
+    for(int x =0;x<nbSievePrimes;x++){
+        mpz_clear(sievePrimeList[x]);
+    }
+    mpz_clear(tmpRand);
+    free(sievePrimeList);
+    gmp_randclear(randstate);
     return 0;
 }
