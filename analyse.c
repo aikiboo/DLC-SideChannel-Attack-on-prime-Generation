@@ -90,21 +90,20 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
-    FILE *fptrHamAndNoise = fopen(argv[1], "r");
+
     int nbSievePrimes = atoi(argv[2]);
     int nb_candidats = atoi(argv[3]);
     if(nb_candidats ==1){
         printf("Trop peu de candidats. Echec\n");
         exit(1);
     }
-    double norm_comp;
-    double tmp;
+    FILE *fptrHamAndNoise = fopen(argv[1], "r");
+    double norm_comp,tmp;
     int small_prime;
     mpz_t z_h, z_m, p;
     mpz_inits(z_h, z_m, p, NULL);
     unsigned int candidats[nbSievePrimes];
-    double** mesures;
-    mesures = malloc(sizeof(double*)*nb_candidats);
+    double** mesures = malloc(sizeof(double*)*nb_candidats);
     mpz_t *sievePrimeList;
 
     //setup du gen random
@@ -134,16 +133,16 @@ int main(int argc, char const *argv[]) {
     double a = getA(mesures, nb_candidats, nbSievePrimes, b);
     printf("A = %f\n", a);
     int tmp2;
-
+    double *hypothesis,*comparaisons,*score;
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
-        double score[small_prime];
+        score =  malloc(sizeof(double)*small_prime);
         double *H[small_prime];
         score[0] = 0;
         for (int h = 1; h < small_prime; h++) {
             //mpz_set_ui(z_h,h);
-            double *hypothesis = malloc(sizeof(double)*nb_candidats);
-            double comparaisons[nb_candidats];
+            hypothesis = malloc(sizeof(double)*nb_candidats);
+            comparaisons = malloc(sizeof(double)*nb_candidats);
             for (int i = 0; (i < nb_candidats); i++) {
                 //m(h − (n − i − 1)τ mod sj )
                 tmp2 = h - (nb_candidats-i-1)*2 ;
@@ -156,10 +155,13 @@ int main(int argc, char const *argv[]) {
             score[h] = correlation_coeff(hypothesis, comparaisons, nb_candidats);
             H[h] = hypothesis;
             norm_comp = euclidean_norm(comparaisons, nb_candidats);
+            free(hypothesis);
+            free(comparaisons);
 
         }
         candidats[j] = argmax(score, H, small_prime, norm_comp);
         gmp_printf("Congru à %d mod %Zd \n",candidats[j],sievePrimeList[j]);
+        free(score);
 
 
     }
@@ -174,4 +176,6 @@ int main(int argc, char const *argv[]) {
         mpz_clear(sievePrimeList[x]);
     }
     free(sievePrimeList);
+    mpz_clears(z_h, z_m, p, NULL);
+    gmp_randclear(randstate);
 }
