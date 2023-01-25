@@ -13,10 +13,8 @@ int main(int argc, char const *argv[]) {
     int nbSievePrimes = atoi(argv[1]);
     int size = atoi(argv[2]);
     srand(time(NULL));
-    mpz_t p;
-    mpz_t q;
-    mpz_t N;
-    mpz_inits(p,q,N,NULL);
+    mpz_t p,q,N,tmpRand;
+    mpz_inits(p,q,N,tmpRand,NULL);
 
     //Setup de la sortie
     FILE *output_p = fopen("output_sequence_p.txt", "w");
@@ -34,7 +32,6 @@ int main(int argc, char const *argv[]) {
 
     for (int j = 0; j < 2; j++) {
         //Génération du premier entier impair
-        mpz_t tmpRand;
         gen_k_bits_number_odd(tmpRand, size, randstate);
         int isPrime;
         while(1){
@@ -69,14 +66,25 @@ int main(int argc, char const *argv[]) {
             mpz_set(q,tmpRand);
             gmp_printf("Premier q : \t%Zu\n", q);
         }
+        mpz_clear(tmpRand);
        
 
     }
-    fclose(output_p);
-    fclose(output_q);
 
     //Calcul du module
     mpz_mul(N,p,q);
+
+    fclose(output_p);
+    fclose(output_q);
+
     gmp_fprintf(module,"%Zd",N);
+    mpz_clears(p,q,N,NULL);
+    //on clear le sieve
+    for(int x =0;x<nbSievePrimes;x++){
+        mpz_clear(sievePrimeList[x]);
+    }
+    free(sievePrimeList);
+    gmp_randclear(randstate);
+    fclose(module);
     
 }
