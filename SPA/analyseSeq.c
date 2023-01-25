@@ -52,6 +52,7 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
             mpz_mod(congruences[j], congru, divisors[j]);
             j++;
             ind_divisor_prime = -1;
+            mpz_clear(congru);
         }
         if (tmp == 'a') {
             fscanf(output, "%c", &tmp);
