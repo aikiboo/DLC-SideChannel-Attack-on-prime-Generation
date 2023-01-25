@@ -256,7 +256,9 @@ int main(int argc, char const *argv[]) {
         mpz_divexact(q, N, ap);
         gmp_printf("p = %Zd\n", ap);
         gmp_printf("q = %Zd\n", q);
-    } else {
+        mpz_clear(q);
+    }
+    else {
         int nb_candidatsQ, nbDivisorsQ;
 
         mpz_t aq, inv_ap, sq, bq, *divisorsQ, *congruencesQ, *divisorForEachCandidateQ;
@@ -293,8 +295,10 @@ int main(int argc, char const *argv[]) {
             mpz_divexact(p, N, bq);
             gmp_printf("p = %Zd\n", p);
             gmp_printf("q = %Zd\n", bq);
+            mpz_clear(p);
 
-        } else {   //On cherche à retrouver p mod ppcm(sp,sq) ou q mod ppcm(sp,sq)
+        }
+        else {   //On cherche à retrouver p mod ppcm(sp,sq) ou q mod ppcm(sp,sq)
 
             mpz_t bp, inv_bq, p, q, s, lcmS, a, pgcd, *S = malloc(sizeof(mpz_t) * 2), *P = malloc(
                     sizeof(mpz_t) * 2), *Q = malloc(sizeof(mpz_t) * 2);
@@ -383,6 +387,7 @@ int main(int argc, char const *argv[]) {
                                 gmp_printf("q = %Zd\n", q2);
                                 exit(1);
                             }
+                            mpz_clear(q2);
                             printf("échec de l'attaque");
                         }
 
@@ -401,15 +406,36 @@ int main(int argc, char const *argv[]) {
                             gmp_printf("q = %Zd\n", q);
                             exit(1);
                         }
+                        mpz_clear(p2);
                         printf("échec de l'attaque\n");
                     }
                 }
             }
 
-            mpz_inits(bp, inv_bq, S[0], S[1], P[0], P[1], Q[0], Q[1], p, q, s, lcmS, a, pgcd, NULL);
+            mpz_clears(bp, inv_bq, S[0], S[1], P[0], P[1], Q[0], Q[1], p, q, s, lcmS, a, pgcd, NULL);
             free(S);
             free(P);
             free(Q);
         }
+        for (int i = 0; i < nb_candidatsQ; i++) {
+            mpz_clears(divisorsQ[i], congruencesQ[i], divisorForEachCandidateQ[i], NULL);
+        }
+        free(divisorsQ);
+        free(congruencesQ);
+        free(divisorForEachCandidateQ);
+        mpz_clears(aq, inv_ap, sq, bq, NULL);
     }
+
+    //on clear le sieve
+    for(int x =0;x<nbSievePrimes;x++){
+        mpz_clear(sievePrimeList[x]);
+    }
+    for (int i = 0; i < nb_candidatsP; i++) {
+        mpz_clears(divisorsP[i], congruencesP[i], divisorForEachCandidateP[i], NULL);
+    }
+    free(sievePrimeList);
+    free(divisorsP);
+    free(congruencesP);
+    free(divisorForEachCandidateP);
+    mpz_clears(ap, sp,N, NULL);
 }
