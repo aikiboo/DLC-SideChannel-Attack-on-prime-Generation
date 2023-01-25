@@ -18,12 +18,12 @@ while (total < 1000):
     output = stream.read()
     lines = output.split('\n')
     try:
-        premier2 = lines[len(lines) - 2].split(' ')[2]
+        premier2 = int(lines[len(lines) - 2].split(' ')[2])
     except:
         continue
     total = total + 1
     print(f" {premier} vs {premier2} ({nbCand})")
-    if (int(premier) == int(premier2)):
+    if int(premier) == premier2:
         correct += 1
 
     else:
