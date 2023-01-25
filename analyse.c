@@ -165,5 +165,7 @@ int main(int argc, char const *argv[]) {
     }
     chinese_remainder_theorem_cpa(p, sievePrimeList, candidats, nbSievePrimes);
     gmp_printf("p = %Zd\n", p);
-
+    for (int i = 0; i < nb_candidats; i++)
+        free(mesures[i]);
+    free(mesures);
 }
