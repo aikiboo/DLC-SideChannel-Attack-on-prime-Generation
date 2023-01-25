@@ -34,7 +34,7 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
    mpz_t congru;
 
    fseek(output,0,SEEK_SET);
-   int j = 1;
+   int j = 0;
 
    while(j < nb_candidats){
       fscanf(output, "%c", &tmp);
@@ -43,10 +43,10 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
       }
       if (tmp == 'b') {
          mpz_init(congru);
-         mpz_set(divisors[j],sievePrimeList[ind_divisor_prime]);
-         mpz_set(divisorForEachCandidate[j],sievePrimeList[ind_divisor_prime]);
+         mpz_set(divisors[j], sievePrimeList[ind_divisor_prime]);
+         mpz_set(divisorForEachCandidate[j], sievePrimeList[ind_divisor_prime]);
          mpz_set_ui(congru, nb_candidats);
-         mpz_sub_ui(congru, congru, j);
+         mpz_sub_ui(congru, congru, j+1);
          mpz_mul_ui(congru, congru, 2);
          mpz_mod(congruences[j], congru ,divisors[j]);
          j++;
@@ -144,6 +144,61 @@ void find_hypothesis(mpz_t *hyp, mpz_t *NotCongruent, int sizeNotCongruent, unsi
    }
 }
 
+void find_missing_bits(mpz_t p2, int nbMissingBits, mpz_t *not_divisors, mpz_t *divisorForEachCandidate, mpz_t N, mpz_t p, mpz_t s, int nbNotDivisors, int nb_candidats) {
+   //Recherche d'un non diviseur qui nous apporte assez d'infos
+   int c = nbNotDivisors-1;
+   while(nbMissingBits < mpz_sizeinbase(not_divisors[c],2) && c > 0) {
+      c--;
+   }
+
+   unsigned long int nd;
+   mpz_t s2;
+
+   while(mpz_divisible_p(N,p2) == 0 && c <= nbNotDivisors) {
+
+      mpz_t *D = malloc(sizeof(mpz_t) * 2),
+            *C = malloc(sizeof(mpz_t) * 2);
+      mpz_t gcd;
+      mpz_init(gcd);
+
+      mpz_inits(D[0], D[1], C[0], C[1], p2, NULL);
+
+      mpz_set(D[0],s);
+      mpz_set(C[0],p);
+
+      mpz_gcd(gcd, s, not_divisors[c]);
+
+      if (mpz_cmp_ui(gcd,1) == 0) {
+         nd = mpz_get_ui(not_divisors[c]);
+
+         //Calcul de ce à quoi p n'est pas congru modulo ce non diviseurs
+         mpz_t *notCongruent;
+         notCongruent = malloc(sizeof(mpz_t) * nd);
+         int sizeNotCongruent = not_congruent(notCongruent, divisorForEachCandidate, nd, nb_candidats);
+
+         //Hypothèses sur p modulo le non diviseur
+         mpz_t *hyp;
+         int sizeHyp = nd - sizeNotCongruent;
+         hyp = malloc(sizeof(mpz_t) * sizeHyp);
+         find_hypothesis(hyp, notCongruent, sizeNotCongruent, nd);
+
+         int h = 0;
+         mpz_set_ui(D[1],nd);
+         mpz_init(s2);
+         while(mpz_divisible_p(N,p2) == 0 && h<sizeHyp) {
+            mpz_set(C[1],hyp[h]);
+            mpz_init(p2);
+            chinese_remainder_theorem_spa(p2, s2, D, C, 2);
+            h++;
+            }
+            if (mpz_divisible_p(N,p2) != 0){
+               return;
+            }
+         }
+      c++;
+   }
+}
+
 int main(int argc, char const *argv[]) {
    if (argc < 5) {
       printf("Usage : ./analyse [filename output p] [filename output q] [filename module] [sieveSize] \n");
@@ -186,7 +241,7 @@ int main(int argc, char const *argv[]) {
 
    int nbDivisorsP = find_divisors(divisorsP, congruencesP, divisorForEachCandidateP, sievePrimeList, nb_candidatsP, outputP);
    fclose(outputP);
-   
+
    mpz_t ap, sp;
    mpz_inits(ap, sp, NULL);
  
@@ -290,7 +345,7 @@ int main(int argc, char const *argv[]) {
                //Calcul du nombre de bits manquants
                int sizeP = mpz_sizeinbase(p,2);
                float nbMissingBitsP = floor(sizeN/2) - sizeP;
-               printf("missing bits = %f\n", nbMissingBitsP);
+               printf("nombre de bits manquants pour p : %f\n", nbMissingBitsP);
 
                //Calcul des petits premiers non diviseurs
                int nbNotDivisorsP = nbSievePrimes - nbDivisorsP;
@@ -307,7 +362,7 @@ int main(int argc, char const *argv[]) {
                   //Calcul du nombre de bits manquants
                   int sizeQ = mpz_sizeinbase(q,2);
                   float nbMissingBitsQ = floor(sizeN/2) - sizeQ;
-                  printf("missing bits = %f\n", nbMissingBitsQ);
+                  printf("nombre de bits manquants pour q : %f\n", nbMissingBitsQ);
 
                   //Calcul des petits premiers non diviseurs
                   int nbNotDivisorsQ = nbSievePrimes - nbDivisorsQ;
@@ -317,7 +372,6 @@ int main(int argc, char const *argv[]) {
                   int bQ;
                   bQ = mpz_sizeinbase(not_divisorsQ[nbNotDivisorsQ-1],2);
 
-
                   if(nbMissingBitsQ > bQ) {
                      printf("échec de l'attaque\n");
                      exit(1);
@@ -326,118 +380,34 @@ int main(int argc, char const *argv[]) {
                   else {
                      printf("on tente de retrouver les bits manquants de q\n");
 
-                     //Recherche d'un non diviseur qui nous apporte assez d'infos
-                     int c = nbNotDivisorsQ-1;
-                     while(nbMissingBitsQ < mpz_sizeinbase(not_divisorsQ[c],2) && c > 0) {
-                        c--;
-                     }
+                     mpz_t q2;
+                     mpz_init(q2);
 
-                     unsigned long int nd;
-                     mpz_t s2;
+                     find_missing_bits(q2, nbMissingBitsQ, not_divisorsQ, divisorForEachCandidateQ, N, q, s, nbNotDivisorsQ, nb_candidatsQ);
 
-                     while(mpz_divisible_p(N,q) == 0 && c <= nbNotDivisorsQ) {
-                        mpz_gcd(pgcd, s,not_divisorsQ[c]);
-
-                        mpz_t *D = malloc(sizeof(mpz_t) * 2),
-                              *C = malloc(sizeof(mpz_t) * 2);
-                        mpz_t q2;
-
-                        mpz_inits(D[0], D[1], C[0], C[1], q2,  NULL);
-
-                        mpz_set(D[0],s);
-                        mpz_set(C[0],q);
-
-                        if (mpz_cmp_ui(pgcd,1) == 0) {
-                           nd = mpz_get_ui(not_divisorsQ[c]);
-
-                           //Calcul de ce à quoi p n'est pas congru modulo ce non diviseurs
-                           mpz_t *notCongruentQ;
-                           notCongruentQ = malloc(sizeof(mpz_t) * nd);
-                           int sizeNotCongruentQ = not_congruent(notCongruentQ, divisorForEachCandidateQ, nd, nb_candidatsQ);
-
-                           //Hypothèses sur p modulo le non diviseur
-                           mpz_t *hypQ;
-                           int sizeHypQ = nd - sizeNotCongruentQ;
-                           hypQ = malloc(sizeof(mpz_t) * sizeHypQ);
-                           find_hypothesis(hypQ, notCongruentQ, sizeNotCongruentQ, nd);
-
-                           int h = 0;
-                           mpz_set_ui(D[1],nd);
-                           mpz_init(s2);
-                           while(mpz_divisible_p(N,q2) == 0 && h<sizeHypQ) {
-                              mpz_set(C[1],hypQ[h]);
-                              mpz_init(q2);
-                              chinese_remainder_theorem_spa(q2, s2, D, C, 2);
-                              h++;
-                           }
-                           if (mpz_divisible_p(N,q2) != 0){
+                     if (mpz_divisible_p(N,q2) != 0){
                               mpz_divexact(p,N,q2);
                               gmp_printf("p = %Zd\n", p);
                               gmp_printf("q = %Zd\n", q2);
                               exit(1);
-                           }
-                        }
-                        c++;
                      }
                      printf("échec de l'attaque");
                   }
+                  
                }
-
                else {
                   printf("on tente de retrouver les bits manquants de p\n");
 
-                 //Recherche d'un non diviseur qui nous apporte assez d'infos
-                     int c = nbNotDivisorsP-1;
-                     while(nbMissingBitsP < mpz_sizeinbase(not_divisorsP[c],2) && c > 0) {
-                        c--;
-                     }
+                  mpz_t p2;
+                  mpz_init(p2);
 
-                     unsigned long int nd;
-                     mpz_t s2;
+                  find_missing_bits(p2, nbMissingBitsP, not_divisorsP, divisorForEachCandidateP, N, p, s, nbNotDivisorsP, nb_candidatsP);
 
-                     while(mpz_divisible_p(N,p) == 0 && c <= nbNotDivisorsP) {
-                        mpz_gcd(pgcd, s, not_divisorsP[c]);
-
-                        mpz_t *D = malloc(sizeof(mpz_t) * 2),
-                              *C = malloc(sizeof(mpz_t) * 2);
-                        mpz_t p2;
-
-                        mpz_inits(D[0], D[1], C[0], C[1], p2, NULL);
-
-                        mpz_set(D[0],s);
-                        mpz_set(C[0],p);
-
-                        if (mpz_cmp_ui(pgcd,1) == 0) {
-                           nd = mpz_get_ui(not_divisorsP[c]);
-
-                           //Calcul de ce à quoi p n'est pas congru modulo ce non diviseurs
-                           mpz_t *notCongruentP;
-                           notCongruentP = malloc(sizeof(mpz_t) * nd);
-                           int sizeNotCongruentP = not_congruent(notCongruentP, divisorForEachCandidateP, nd, nb_candidatsP);
-
-                           //Hypothèses sur p modulo le non diviseur
-                           mpz_t *hypP;
-                           int sizeHypP = nd - sizeNotCongruentP;
-                           hypP = malloc(sizeof(mpz_t) * sizeHypP);
-                           find_hypothesis(hypP, notCongruentP, sizeNotCongruentP, nd);
-
-                           int h = 0;
-                           mpz_set_ui(D[1],nd);
-                           mpz_init(s2);
-                           while(mpz_divisible_p(N,p2) == 0 && h<sizeHypP) {
-                              mpz_set(C[1],hypP[h]);
-                              mpz_init(p2);
-                              chinese_remainder_theorem_spa(p2, s2, D, C, 2);
-                              h++;
-                           }
-                           if (mpz_divisible_p(N,p2) != 0){
+                  if (mpz_divisible_p(N,p2) != 0){
                               mpz_divexact(q,N,p2);
                               gmp_printf("p = %Zd\n", p2);
                               gmp_printf("q = %Zd\n", q);
                               exit(1);
-                           }
-                        }
-                        c++;
                   }
                   printf("échec de l'attaque\n");
                }
