@@ -28,12 +28,10 @@ def CPA_func(NBsieve, sizePremier):
     output = stream.read()
     lines = output.split('\n')
     try:
-        premier2 = lines[len(lines) - 2].split(' ')[2]
+        premier2 = int(lines[len(lines) - 2].split(' ')[2])
     except:
-        print(NBsieve," ",nbCand)
-        exit()
         return CPA_func(NBsieve, sizePremier)
-    return int(premier) == int(premier2)
+    return int(premier) == premier2
 
 
 SPA_RESULT = {(53, 256): 0,
