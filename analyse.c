@@ -168,4 +168,10 @@ int main(int argc, char const *argv[]) {
     for (int i = 0; i < nb_candidats; i++)
         free(mesures[i]);
     free(mesures);
+
+    //on clear le sieve
+    for(int x =0;x<nbSievePrimes;x++){
+        mpz_clear(sievePrimeList[x]);
+    }
+    free(sievePrimeList);
 }
