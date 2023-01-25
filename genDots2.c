@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "gauss.c"
+#include "common/gauss.c"
 
 #define A 2
 #define B 3

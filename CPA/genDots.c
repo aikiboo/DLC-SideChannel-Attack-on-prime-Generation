@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include "gauss.c"
-#include "common/function.h"
+#include "../common/gauss.c"
+#include "../common/function.h"
 
 #define A 2
 #define B 3
