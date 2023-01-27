@@ -6,8 +6,8 @@ def SPA_func(NBsieve, sizePremier):
     stream = os.popen(f'./genSeq {NBsieve} {sizePremier}')
     output = stream.read()
     lines = output.split('\n')
-    p = lines[1].split(': ')[1]
-    q = lines[3].split('\t')[1]
+    p = lines[0].split('\t')[1]
+    q = lines[1].split('\t')[1]
     stream = os.popen(f'./analyseSeq output_sequence_p.txt output_sequence_q.txt module_rsa.txt {NBsieve}')
     output = stream.read()
     lines = output.split('\n')
@@ -31,6 +31,7 @@ def CPA_func(NBsieve, sizePremier):
         premier2 = int(lines[len(lines) - 2].split(' ')[2])
     except:
         return CPA_func(NBsieve, sizePremier)
+    #print(premier + f" vs  {premier2}")
     return int(premier) == premier2
 
 
@@ -38,7 +39,8 @@ SPA_RESULT = {(53, 256): 0,
               (59, 256): 0,
               (69, 256): 0}
 
-CPA_RESULT = {(53, 256): 0}
+CPA_RESULT = {(53, 256): 0,
+              (50,196):0}
 
 toRun = 1000
 total = 1

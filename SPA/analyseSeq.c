@@ -202,6 +202,28 @@ find_missing_bits(mpz_t p2, int nbMissingBits, mpz_t *not_divisors, mpz_t *divis
     }
 }
 
+void clearMPZArray(int size, mpz_t *array){
+    for(int i =0;i<size;i++)mpz_clear(array[i]);
+    free(array);
+
+}
+
+void clearMemSieve(int nbSievePrimes,mpz_t *sievePrimeList){
+        //on clear le sieve
+        for(int x =0;x<nbSievePrimes;x++){
+            mpz_clear(sievePrimeList[x]);
+        }
+        free(sievePrimeList);
+}
+void clearMemDivisors(int nb_candidatsP,mpz_t *divisors,mpz_t *congruences,mpz_t *divisorForEachCandidats){
+    for (int i = 0; i < nb_candidatsP; i++) {
+        mpz_clears(divisors[i], congruences[i], divisorForEachCandidats[i], NULL);
+    }
+    free(divisors);
+    free(congruences);
+    free(divisorForEachCandidats);
+    }
+
 int main(int argc, char const *argv[]) {
     if (argc < 5) {
         printf("Usage : ./analyse [filename output p] [filename output q] [filename module] [sieveSize] \n");
@@ -248,9 +270,9 @@ int main(int argc, char const *argv[]) {
 
     mpz_t ap, sp;
     mpz_inits(ap, sp, NULL);
-
+    //On cherche P avec le CRT
     chinese_remainder_theorem_spa(ap, sp, divisorsP, congruencesP, nbDivisorsP);
-
+    //Si on a trouvé P (N divisible par P et P != 1)
     if (mpz_divisible_p(N, ap) != 0 && mpz_cmp_ui(ap, 1) != 0) { //On a trouvé p
         mpz_t q;
         mpz_init(q);
@@ -261,7 +283,6 @@ int main(int argc, char const *argv[]) {
     }
     else {
         int nb_candidatsQ, nbDivisorsQ;
-
         mpz_t aq, inv_ap, sq, bq, *divisorsQ, *congruencesQ, *divisorForEachCandidateQ;
 
         mpz_inits(aq, inv_ap, sq, bq, NULL);
@@ -297,7 +318,6 @@ int main(int argc, char const *argv[]) {
             gmp_printf("p = %Zd\n", p);
             gmp_printf("q = %Zd\n", bq);
             mpz_clear(p);
-
         }
         else {   //On cherche à retrouver p mod ppcm(sp,sq) ou q mod ppcm(sp,sq)
 
@@ -328,7 +348,8 @@ int main(int argc, char const *argv[]) {
                 mpz_divexact(q, N, p);
                 gmp_printf("p = %Zd\n", p);
                 gmp_printf("q = %Zd\n", q);
-            } else {
+            }
+            else {
                 mpz_mod(Q[0], Q[0], S[0]);
                 mpz_mod(Q[1], Q[1], S[1]);
 
@@ -338,7 +359,8 @@ int main(int argc, char const *argv[]) {
                     mpz_divexact(p, N, q);
                     gmp_printf("p = %Zd\n", p);
                     gmp_printf("q = %Zd\n", q);
-                } else {
+                }
+                else {
 
                     //Calcul du nombre de bits manquants
                     int sizeP = mpz_sizeinbase(p, 2);
@@ -352,7 +374,6 @@ int main(int argc, char const *argv[]) {
 
                     int bP;
                     bP = mpz_sizeinbase(not_divisorsP[nbNotDivisorsP - 1], 2);
-
                     if (nbMissingBitsP > bP) {
 
                         printf("trop de bits manquants pour p, on tente de retrouver q\n");
@@ -373,7 +394,8 @@ int main(int argc, char const *argv[]) {
                         if (nbMissingBitsQ > bQ) {
                             printf("échec de l'attaque\n");
                             exit(1);
-                        } else {
+                        }
+                        else{
                             printf("on tente de retrouver les bits manquants de q\n");
 
                             mpz_t q2;
@@ -391,8 +413,10 @@ int main(int argc, char const *argv[]) {
                             mpz_clear(q2);
                             printf("échec de l'attaque");
                         }
+                        clearMPZArray(nbNotDivisorsQ,not_divisorsQ);
 
-                    } else {
+                    } else
+                    {
                         printf("on tente de retrouver les bits manquants de p\n");
 
                         mpz_t p2;
@@ -410,6 +434,8 @@ int main(int argc, char const *argv[]) {
                         mpz_clear(p2);
                         printf("échec de l'attaque\n");
                     }
+
+                    clearMPZArray(nbNotDivisorsP,not_divisorsP);
                 }
             }
 
@@ -427,16 +453,9 @@ int main(int argc, char const *argv[]) {
         mpz_clears(aq, inv_ap, sq, bq, NULL);
     }
 
-    //on clear le sieve
-    for(int x =0;x<nbSievePrimes;x++){
-        mpz_clear(sievePrimeList[x]);
-    }
-    for (int i = 0; i < nb_candidatsP; i++) {
-        mpz_clears(divisorsP[i], congruencesP[i], divisorForEachCandidateP[i], NULL);
-    }
-    free(sievePrimeList);
-    free(divisorsP);
-    free(congruencesP);
-    free(divisorForEachCandidateP);
+
+    clearMemSieve(nbSievePrimes,sievePrimeList);
+    clearMemDivisors(nb_candidatsP,divisorsP,congruencesP,divisorForEachCandidateP);
     mpz_clears(ap, sp,N, NULL);
+
 }
