@@ -3,6 +3,30 @@
 #include <time.h>
 #include "../common/function.h"
 
+
+void genPrimeAndLog(mpz_t prime,int size,int nbSievePrimes,mpz_t * sievePrimeList,gmp_randstate_t randstate,FILE* outputFile){
+    gen_k_bits_number_odd(prime, size, randstate);
+    int isPrime;
+    while(1){
+        isPrime = 0;
+        for(int i =0;i<nbSievePrimes;i++){
+            fprintf(outputFile,"c");
+            if(mpz_divisible_p(prime,sievePrimeList[i])){
+                isPrime = 1;
+                break;
+            }
+        }
+        //S'il y a un diviseur dans le sieve
+        if(isPrime==0){
+            fprintf(outputFile,"a");
+            if(mpz_probab_prime_p(prime, 10))break;
+        }
+        fprintf(outputFile,"b");
+        mpz_add_ui(prime,prime,2);
+    }
+}
+
+
 int main(int argc, char const *argv[]) {
 
     if (argc < 3) {
@@ -30,46 +54,14 @@ int main(int argc, char const *argv[]) {
     mpz_t * sievePrimeList = malloc(sizeof(mpz_t) * nbSievePrimes);
     find_k_first_primes(nbSievePrimes, sievePrimeList);
 
-    for (int j = 0; j < 2; j++) {
-        //Génération du premier entier impair
-        gen_k_bits_number_odd(tmpRand, size, randstate);
-        int isPrime;
-        while(1){
-            isPrime = 0;
-            for(int i =0;i<nbSievePrimes;i++){
-                if (j == 0) fprintf(output_p,"c");
-                else fprintf(output_q,"c");
-                
-                if(mpz_divisible_p(tmpRand,sievePrimeList[i])){
-                    isPrime =1;
-                    break;
-                }
-            }
-            //S'il y a un diviseur dans le sieve
-            if(isPrime==0){
-                if (j == 0) fprintf(output_p,"a");
-                else fprintf(output_q,"a");
-                if(mpz_probab_prime_p(tmpRand, 10))break;
-
-            }
-            if (j == 0) fprintf(output_p,"b");
-            else fprintf(output_q,"b");
-            mpz_add_ui(tmpRand,tmpRand,2);
-        }
-
-        printf("Is prime (1=prob,2=100\%) : %d\n", mpz_probab_prime_p(tmpRand, 10));
-        if (j == 0) {
-            mpz_set(p,tmpRand);
-            gmp_printf("Premier p : \t%Zu\n", p);
-        }
-        else {
-            mpz_set(q,tmpRand);
-            gmp_printf("Premier q : \t%Zu\n", q);
-        }
-        mpz_clear(tmpRand);
+    genPrimeAndLog(p,size,nbSievePrimes,sievePrimeList,randstate,output_p);
+    gmp_printf("Premier p : \t%Zu\n", p);
+    genPrimeAndLog(q,size,nbSievePrimes,sievePrimeList,randstate,output_q);
+    gmp_printf("Premier q : \t%Zu\n", q);
+    mpz_clear(tmpRand);
        
 
-    }
+
 
     //Calcul du module
     mpz_mul(N,p,q);
