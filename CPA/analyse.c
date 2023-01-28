@@ -1,9 +1,10 @@
+
 #include "gmp.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "../common/function.h"
+#include "common/function.h"
 typedef struct {
     int size;
     unsigned int *array;
@@ -13,7 +14,7 @@ typedef struct {
 /*
 Renvoie les indices de la valeur absolue maximale de la liste
 */
-unsigned int argmax(double *L, double **H, int size, double norm_comp) {
+unsigned int argmax(double *L, double **H, int size, double norm_comp, int nb_candidats) {
     double** possible_hypothesis = malloc(sizeof(double *)*size);
     double max = L[0];
     ArgResults *results= malloc(sizeof(ArgResults));
@@ -25,17 +26,23 @@ unsigned int argmax(double *L, double **H, int size, double norm_comp) {
             max = fabs(L[i]);
             results->array[0] = i;
             results->size = 1;
-            possible_hypothesis[0] = H[i];
+            possible_hypothesis[0] = malloc(sizeof(double)*nb_candidats);
+            for (int k = 0; k < nb_candidats; k++) {
+                possible_hypothesis[0][k]= H[i][k];
+            }
         }
         else if(fabs(L[i]) == max){
             results->array[results->size] = i;
-            possible_hypothesis[results->size] = H[i];
+            possible_hypothesis[results->size] = malloc(sizeof(double)*nb_candidats);
+            for (int k = 0; k < nb_candidats; k++) {
+                possible_hypothesis[results->size][k]= H[i][k];
+            }
             results->size++;
         }
     }
     double diff_norms[results->size];
     for (int j = 0; j<results->size ; j++) {
-        diff_norms[j] = fabs(euclidean_norm(possible_hypothesis[j], results->size) - norm_comp);
+        diff_norms[j] = fabs(euclidean_norm(possible_hypothesis[j], nb_candidats) - norm_comp);
     }
     int toReturn = results->array[argmin(diff_norms, results->size)];
     free(possible_hypothesis);
@@ -137,10 +144,10 @@ int main(int argc, char const *argv[]) {
     for (int j = 0; j < nbSievePrimes; j++) {
         small_prime = mpz_get_ui(sievePrimeList[j]);
         score =  malloc(sizeof(double)*small_prime);
-        double *H[small_prime];
+        double **H;
+        H = malloc(sizeof(double*)*small_prime);
         score[0] = 0;
         for (int h = 1; h < small_prime; h++) {
-            //mpz_set_ui(z_h,h);
             hypothesis = malloc(sizeof(double)*nb_candidats);
             comparaisons = malloc(sizeof(double)*nb_candidats);
             for (int i = 0; (i < nb_candidats); i++) {
@@ -150,18 +157,22 @@ int main(int argc, char const *argv[]) {
                 mpz_mod_ui(z_h, z_h, small_prime);
                 hypothesis[i] = mpz_popcount(z_h)*a+b; //w(h - (n - i - 1)*2 mod sj)
                 comparaisons[i] = mesures[i][j];
-            }
 
+            }
+           
             score[h] = correlation_coeff(hypothesis, comparaisons, nb_candidats);
-            H[h] = hypothesis;
+            H[h] = malloc(sizeof(double)*nb_candidats);
+            for (int k = 0; k<nb_candidats; k++){
+                H[h][k] = hypothesis[k];
+            }
             norm_comp = euclidean_norm(comparaisons, nb_candidats);
             free(hypothesis);
             free(comparaisons);
-
         }
-        candidats[j] = argmax(score, H, small_prime, norm_comp);
+        candidats[j] = argmax(score, H, small_prime, norm_comp, nb_candidats);
         gmp_printf("Congru à %d mod %Zd \n",candidats[j],sievePrimeList[j]);
         free(score);
+       
 
 
     }
