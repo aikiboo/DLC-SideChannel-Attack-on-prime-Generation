@@ -135,9 +135,9 @@ int main(int argc, char const *argv[]) {
         //printf("\n");
     }
 
-    double b = round(getB(mesures,nb_candidats,nbSievePrimes));
+    double b = getB(mesures,nb_candidats,nbSievePrimes);
     printf("B = %f\n", b);
-    double a = round(getA(mesures, nb_candidats, nbSievePrimes, b));
+    double a = getA(mesures, nb_candidats, nbSievePrimes, b);
     printf("A = %f\n", a);
     int tmp2;
     double *hypothesis,*comparaisons,*score;
