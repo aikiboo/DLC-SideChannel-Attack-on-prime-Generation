@@ -13,11 +13,13 @@ def SPA_func(NBsieve, sizePremier):
     lines = output.split('\n')
     try:
         out = lines[len(lines) - 2]
+        s = lines[4]
     except:
         if True:
             exit()
         return SPA_func(NBsieve, sizePremier)
-    return out != "échec de l'attaque"
+
+    return out != "échec de l'attaque", int(s.split("= ")[1])
 
 
 def CPA_func(NBsieve, sizePremier):
@@ -26,7 +28,7 @@ def CPA_func(NBsieve, sizePremier):
     lines = output.split('\n')
     nbCand = lines[1].split(': ')[1]
     premier = lines[2].split('\t')[1]
-    stream = os.popen(f'./analyse output_hamming_with_func_and_noise.txt {NBsieve} {nbCand}')
+    stream = os.popen(f'./analyse output_hamming_with_func.txt {NBsieve} {nbCand}')
     output = stream.read()
     lines = output.split('\n')
     try:
@@ -37,12 +39,12 @@ def CPA_func(NBsieve, sizePremier):
     return (int(premier) == premier2, int(nbCand))
 
 
-SPA_RESULT = {(53, 256): 0,
-              (59, 256): 0,
-              (69, 256): 0}
-
+SPA_RESULT = {(53, 256): [0,0],
+              (59, 256): [0,0],
+              (69, 256): [0,0]}
 CPA_RESULT = {(53, 256): {0: [0,0],53: [0,0], 126: [0,0], 246: [0,0]},
-              (50, 196): {0: [0,0], 126: [0,0], 246: [0,0]}}
+              (50, 196): {0: [0,0],53: [0,0], 126: [0,0], 246: [0,0]}}
+CPA_RESULT = {}
 
 toRun = 1000
 total = 1
@@ -50,8 +52,11 @@ total = 1
 while (total <= toRun):
     print("\n\n\n\nSPA : ")
     for x in SPA_RESULT:
-        SPA_RESULT[x] += SPA_func(x[0], x[1])
-        print(f"{x} : {SPA_RESULT[x]}/{total}  ({round((SPA_RESULT[x] / total) * 100, 2)}%)")
+        result = SPA_func(x[0], x[1])
+        SPA_RESULT[x][0] += result[0]
+        if result[1] > 256:
+            SPA_RESULT[x][1] += 1
+        print(f"{x} : {SPA_RESULT[x][0]}/{total}  ({round((SPA_RESULT[x][0] / total) * 100, 2)}%)   log(s) > 256 : {SPA_RESULT[x][1]}/{total}")
 
     print("CPA : ")
     for x in CPA_RESULT:
