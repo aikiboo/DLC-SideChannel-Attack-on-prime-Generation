@@ -18,8 +18,6 @@ analyseSeq: SPA/analyseSeq.c
 
 all: genDots analyse genSeq analyseSeq
 
-test: tests.c
-	$(CC) $(CFLAGS) -o tests common/function.c tests.c  $(CLIBS)
 
 clean:
 	@rm -f *.o
