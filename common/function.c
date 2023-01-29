@@ -31,23 +31,17 @@ void chinese_remainder_theorem_cpa(mpz_t p, mpz_t *sievePrimeList, unsigned int 
 void chinese_remainder_theorem_spa(mpz_t p, mpz_t N, mpz_t *divisors, mpz_t *congruences, int nb_divisors) {
     mpz_t current;
     mpz_t Ni;
-    mpz_t inv_Ni,tmp2;
+    mpz_t inv_Ni;
 
-    mpz_inits(tmp2,current, Ni, inv_Ni, NULL);
-    mpz_set_ui(N, 2);
-    mpz_set_ui(tmp2, 2);
+    mpz_inits(current, Ni, inv_Ni, NULL);
+    mpz_set_ui(N, 1);
+    //mpz_set_ui(tmp2, 2);
 
 
     for (int i = 0; i < nb_divisors; i++) {
         mpz_mul(N, N, divisors[i]);
     }
-    mpz_divexact(Ni, N, tmp2);
-    mpz_invert(inv_Ni, Ni, tmp2);
-    mpz_mul_ui(current, Ni, 1);
-    mpz_mul(current, current, inv_Ni);
-    mpz_add(p, p, current);
-    mpz_mod(p, p, N);
-    //gmp_printf("Debug :\nN = %Zu\n", N);
+   
     for (int i = 0; i < nb_divisors; i++) {
         mpz_divexact(Ni, N, divisors[i]);
         mpz_invert(inv_Ni, Ni, divisors[i]);
@@ -57,9 +51,8 @@ void chinese_remainder_theorem_spa(mpz_t p, mpz_t N, mpz_t *divisors, mpz_t *con
         mpz_mod(p, p, N);
     }
     mpz_mod(p, p, N);
-    mpz_clears(tmp2,current, Ni, inv_Ni, NULL);
+    mpz_clears(current, Ni, inv_Ni, NULL);
 }
-
 
 void find_k_first_primes(int size, mpz_t *sievePrimeList) {
     mpz_t current;
