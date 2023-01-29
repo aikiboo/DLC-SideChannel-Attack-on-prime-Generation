@@ -64,15 +64,15 @@ int find_divisors(mpz_t *divisors, mpz_t *congruences, mpz_t *divisorForEachCand
     //Suppression des doublons
     nbDivisors = nb_candidats;
     for (int i = 0; i < nbDivisors; i++) {
-        for (int j = i + 1; j < nbDivisors;) {
-            if (mpz_cmp(divisors[j], divisors[i]) == 0) {
-                for (int k = j; k < nbDivisors - 1; k++) {
+        for (int l = i + 1; l < nbDivisors;) {
+            if (mpz_cmp(divisors[l], divisors[i]) == 0) {
+                for (int k = l; k < nbDivisors - 1; k++) {
                     mpz_set(divisors[k], divisors[k + 1]);
                     mpz_set(congruences[k], congruences[k + 1]);
                 }
                 nbDivisors--;
             } else {
-                j++;
+                l++;
             }
         }
     }
@@ -151,16 +151,17 @@ find_missing_bits(mpz_t p2, int nbMissingBits, mpz_t *not_divisors, mpz_t *divis
                   mpz_t s, int nbNotDivisors, int nb_candidats) {
     //Recherche d'un non diviseur qui nous apporte assez d'infos
     int c = nbNotDivisors - 1;
-    while (nbMissingBits < mpz_sizeinbase(not_divisors[c], 2) && c > 0) {
+    while (nbMissingBits < (int)mpz_sizeinbase(not_divisors[c], 2) && c > 0) {
         c--;
     }
 
-    unsigned long int nd;
+    int nd;
     mpz_t s2;
 
     while (mpz_divisible_p(N, p2) == 0 && c <= nbNotDivisors) {
 
-        mpz_t *D = malloc(sizeof(mpz_t) * 2), *C = malloc(sizeof(mpz_t) * 2);
+        mpz_t D[2];
+        mpz_t C[2];
         mpz_t gcd;
         mpz_init(gcd);
 
@@ -203,7 +204,7 @@ find_missing_bits(mpz_t p2, int nbMissingBits, mpz_t *not_divisors, mpz_t *divis
 }
 
 void clearMPZArray(int size, mpz_t *array){
-    for(int i =0;i<size;i++)mpz_clear(array[i]);
+    for(int i =size;i>0;i--)mpz_clear(array[i]);
     free(array);
 
 }
@@ -213,7 +214,6 @@ void clearMemSieve(int nbSievePrimes,mpz_t *sievePrimeList){
         for(int x =0;x<nbSievePrimes;x++){
             mpz_clear(sievePrimeList[x]);
         }
-        free(sievePrimeList);
 }
 void clearMemDivisors(int nb_candidatsP,mpz_t *divisors,mpz_t *congruences,mpz_t *divisorForEachCandidats){
     for (int i = 0; i < nb_candidatsP; i++) {
@@ -364,14 +364,13 @@ int main(int argc, char const *argv[]) {
 
                     //Calcul du nombre de bits manquants
                     int sizeP = mpz_sizeinbase(p, 2);
-                    float nbMissingBitsP = floor(sizeN / 2) - sizeP;
-                    printf("nombre de bits manquants pour p : %f\n", nbMissingBitsP);
+                    int nbMissingBitsP = sizeN/2 - sizeP;
+                    printf("nombre de bits manquants pour p : %d\n", nbMissingBitsP);
 
                     //Calcul des petits premiers non diviseurs
                     int nbNotDivisorsP = nbSievePrimes - nbDivisorsP;
                     mpz_t *not_divisorsP = malloc(sizeof(mpz_t) * nbNotDivisorsP);
                     find_not_divisors(not_divisorsP, sievePrimeList, divisorsP, nbSievePrimes, nbDivisorsP);
-
                     int bP;
                     bP = mpz_sizeinbase(not_divisorsP[nbNotDivisorsP - 1], 2);
                     if (nbMissingBitsP > bP) {
@@ -380,8 +379,8 @@ int main(int argc, char const *argv[]) {
 
                         //Calcul du nombre de bits manquants
                         int sizeQ = mpz_sizeinbase(q, 2);
-                        float nbMissingBitsQ = floor(sizeN / 2) - sizeQ;
-                        printf("nombre de bits manquants pour q : %f\n", nbMissingBitsQ);
+                        int nbMissingBitsQ = sizeN / 2 - sizeQ;
+                        printf("nombre de bits manquants pour q : %d\n", nbMissingBitsQ);
 
                         //Calcul des petits premiers non diviseurs
                         int nbNotDivisorsQ = nbSievePrimes - nbDivisorsQ;
@@ -391,7 +390,7 @@ int main(int argc, char const *argv[]) {
                         int bQ;
                         bQ = mpz_sizeinbase(not_divisorsQ[nbNotDivisorsQ - 1], 2);
 
-                        if (nbMissingBitsQ > bQ) {
+                        if (nbMissingBitsQ > bQ || nbMissingBitsQ<0) {
                             printf("échec de l'attaque\n");
                             exit(1);
                         }
@@ -400,7 +399,6 @@ int main(int argc, char const *argv[]) {
 
                             mpz_t q2;
                             mpz_init(q2);
-
                             find_missing_bits(q2, nbMissingBitsQ, not_divisorsQ, divisorForEachCandidateQ, N, q, s,
                                               nbNotDivisorsQ, nb_candidatsQ);
 
@@ -411,7 +409,7 @@ int main(int argc, char const *argv[]) {
                                 exit(1);
                             }
                             mpz_clear(q2);
-                            printf("échec de l'attaque");
+                            printf("échec de l'attaque\n");
                         }
                         clearMPZArray(nbNotDivisorsQ,not_divisorsQ);
 
@@ -434,12 +432,10 @@ int main(int argc, char const *argv[]) {
                         mpz_clear(p2);
                         printf("échec de l'attaque\n");
                     }
-
-                    clearMPZArray(nbNotDivisorsP,not_divisorsP);
+                    //clearMPZArray(nbNotDivisorsP,not_divisorsP);
                 }
             }
-
-            mpz_clears(bp, inv_bq, S[0], S[1], P[0], P[1], Q[0], Q[1], p, q, s, lcmS, a, pgcd, NULL);
+            mpz_clears(inv_bq, S[0], S[1], P[0], P[1], Q[0], Q[1], p, q, s, lcmS, a, pgcd, NULL);
             free(S);
             free(P);
             free(Q);
@@ -452,8 +448,6 @@ int main(int argc, char const *argv[]) {
         free(divisorForEachCandidateQ);
         mpz_clears(aq, inv_ap, sq, bq, NULL);
     }
-
-
     clearMemSieve(nbSievePrimes,sievePrimeList);
     clearMemDivisors(nb_candidatsP,divisorsP,congruencesP,divisorForEachCandidateP);
     mpz_clears(ap, sp,N, NULL);

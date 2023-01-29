@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-#include "common/function.h"
+#include "../common/function.h"
 typedef struct {
     int size;
     unsigned int *array;

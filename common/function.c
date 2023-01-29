@@ -33,7 +33,7 @@ void chinese_remainder_theorem_spa(mpz_t p, mpz_t N, mpz_t *divisors, mpz_t *con
     mpz_t Ni;
     mpz_t inv_Ni,tmp2;
 
-    mpz_inits(N, tmp2,current, Ni, inv_Ni, NULL);
+    mpz_inits(tmp2,current, Ni, inv_Ni, NULL);
     mpz_set_ui(N, 2);
     mpz_set_ui(tmp2, 2);
 
@@ -57,7 +57,7 @@ void chinese_remainder_theorem_spa(mpz_t p, mpz_t N, mpz_t *divisors, mpz_t *con
         mpz_mod(p, p, N);
     }
     mpz_mod(p, p, N);
-    mpz_clears(N, tmp2,current, Ni, inv_Ni, NULL);
+    mpz_clears(tmp2,current, Ni, inv_Ni, NULL);
 }
 
 
